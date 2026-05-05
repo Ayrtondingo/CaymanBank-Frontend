@@ -2,14 +2,16 @@
 const nextConfig = {
   reactStrictMode: false,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true, // Forzar la omisión estricta de TypeScript
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Desactivamos la generación estática para el panel de control
-  output: 'standalone'
+  // Desactiva el caché de Webpack en memoria para evitar el error
+  webpack: (config, { dev, isServer }) => {
+    config.cache = false;
+    return config;
+  }
 };
 
-module.exports = nextConfig;            
-
+module.exports = nextConfig;

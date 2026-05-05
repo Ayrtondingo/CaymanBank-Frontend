@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "vercel-build": "npx next build"
+    "vercel-build": "NODE_OPTIONS='--max-old-space-size=8192 --no-deprecation' next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",
