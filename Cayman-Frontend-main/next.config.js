@@ -1,16 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false,
   typescript: {
-    // Ignora los errores de tipo en el build de Vercel
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Ignora los errores de linting en el build de Vercel
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverExternalPackages: ["@clerk/nextjs"],
+  }
 };
 
-module.exports = nextConfig;           
-
-
-
+module.exports = nextConfig;

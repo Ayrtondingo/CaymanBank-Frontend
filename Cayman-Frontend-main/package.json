@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "vercel-build": "npm install --legacy-peer-deps && NODE_OPTIONS=--max-old-space-size=4096 next build"
+    "vercel-build": "npm install --legacy-peer-deps --no-audit && NODE_OPTIONS=--openssl-legacy-provider next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",
