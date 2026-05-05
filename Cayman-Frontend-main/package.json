@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "vercel-build": "npm install --legacy-peer-deps --no-audit && next build"
+    "vercel-build": "npm install --legacy-peer-deps --no-audit && NODE_OPTIONS='--trace-warnings' next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",
