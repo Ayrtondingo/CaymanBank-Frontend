@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api"
+    }
+  ],
+  "functions": {
+    "app/**/*.tsx": {
+      "runtime": "vercel-node@4.0.0",
+      "memory": 3008
+    }
+  }
+}
