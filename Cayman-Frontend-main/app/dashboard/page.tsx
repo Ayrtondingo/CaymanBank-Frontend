@@ -70,14 +70,14 @@ export default function DashboardPage() {
       setLoading(true);
       const token = await getToken();
       if (token && user) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me?t=${Date.now()}`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await fetch(`${apiUrl}/users/me?t=${Date.now()}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (!res.ok) throw new Error("Failed to fetch user data");
         
         const bankData: UserData = await res.json();
-        
         const txHistory = await getTransactionHistory(token).catch(() => []);
         
         setData(bankData);
@@ -101,8 +101,9 @@ export default function DashboardPage() {
     try {
       setTransferLoading(true);
       const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sync-cbu`, {
+      const res = await fetch(`${apiUrl}/users/sync-cbu`, {
         method: "POST", 
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -143,8 +144,9 @@ export default function DashboardPage() {
     try {
       setTransferLoading(true);
       const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/change-password`, {
+      const res = await fetch(`${apiUrl}/users/change-password`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -161,9 +163,12 @@ export default function DashboardPage() {
       
       setAliasStatus({ type: 'success', msg: "CLERK_CREDENTIALS_REWRITTEN" });
       setPassForm({ newPass: "", confirmPass: "" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("AUTH_ERR:", err);
-      const errorMsg = (err.message || "").toUpperCase().replace(/ /g, "_");
+      let errorMsg = "SEC_UPDATE_FAILED";
+      if (err instanceof Error) {
+        errorMsg = err.message.toUpperCase().replace(/ /g, "_");
+      }
       setAliasStatus({ type: 'error', msg: errorMsg });
     } finally {
       setTransferLoading(false);
@@ -184,8 +189,9 @@ export default function DashboardPage() {
       setTransferLoading(true);
       setTransferError(null);
       const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/transfer`, {
+      const res = await fetch(`${apiUrl}/transactions/transfer`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`, 
@@ -204,8 +210,12 @@ export default function DashboardPage() {
       }, 2000);
       
       await loadDashboardData();
-    } catch (err: any) {
-      setTransferError(err.message || "XFER_FATAL_ERROR");
+    } catch (err: unknown) {
+      let errorText = "XFER_FATAL_ERROR";
+      if (err instanceof Error) {
+        errorText = err.message;
+      }
+      setTransferError(errorText);
     } finally {
       setTransferLoading(false);
     }
@@ -395,7 +405,7 @@ export default function DashboardPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {movements.map((tx: any, idx: number) => (
+                        {movements.map((tx, idx: number) => (
                           <tr key={idx} className="border-b border-emerald-900/30 hover:bg-emerald-500/5 transition-colors group">
                             <td className="p-4 text-emerald-700 font-mono italic">{tx.date ? new Date(tx.date).toLocaleString() : 'PENDING'}</td>
                             <td className="p-4 font-bold text-emerald-500 group-hover:text-emerald-300">{tx.to || tx.from || 'NODE_SYS'}</td>
@@ -485,14 +495,24 @@ export default function DashboardPage() {
   );
 }
 
-function TransferForm({ currentBalance, onSubmit, loading }: any) {
+interface TransferFormProps {
+  currentBalance: number;
+  onSubmit: (cbu: string, amount: number, reason: string) => void;
+  loading: boolean;
+}
+
+function TransferForm({ currentBalance, onSubmit, loading }: TransferFormProps) {
   const [formData, setFormData] = useState({ cbu: "", amount: "", reason: "" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanCbu = formData.cbu.replace(/\D/g, "");
     const numAmount = Number(formData.amount);
-    if (cleanCbu.length !== 22 || numAmount <= 0 || numAmount > currentBalance) return;
+    
+    if (cleanCbu.length !== 22 || numAmount <= 0 || numAmount > currentBalance) {
+      return;
+    }
+    
     onSubmit(cleanCbu, numAmount, formData.reason || "EXTERNAL_XFER_ORDER");
   };
 
