@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth, useUser, SignOutButton } from "@clerk/nextjs";
-import { getBankingData, getTransactionHistory, API_URL } from "@/lib/api";
+import { getTransactionHistory } from "@/lib/api";
 import {
   Terminal, Send, Loader2, Eye, EyeOff, X, ReceiptText, Lock, Database,
   LayoutDashboard, Activity, LogOut, ShieldCheck, UserCircle, Copy, CheckCircle2
@@ -20,11 +20,33 @@ const money = (amount: number) =>
     currency: "ARS",
   });
 
+// --- INTERFACES ---
+interface Transaction {
+  date?: string;
+  to?: string;
+  from?: string;
+  type: 'IN' | 'OUT';
+  amount: number;
+}
+
+interface UserData {
+  fullName: string;
+  balance: number;
+  accountNumber: string;
+  alias: string;
+  transactions?: Transaction[];
+}
+
+interface AliasStatus {
+  type: 'error' | 'success';
+  msg: string;
+}
+
 export default function DashboardPage() {
   const { getToken } = useAuth();
   const { user } = useUser();
-  const [data, setData] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [data, setData] = useState<UserData | null>(null);
+  const [history, setHistory] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<'main' | 'accounts' | 'history' | 'security' | 'network'>('main');
@@ -35,7 +57,7 @@ export default function DashboardPage() {
   // Alias & Security States
   const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [newAlias, setNewAlias] = useState("");
-  const [aliasStatus, setAliasStatus] = useState<{type: 'error' | 'success', msg: string} | null>(null);
+  const [aliasStatus, setAliasStatus] = useState<AliasStatus | null>(null);
   const [passForm, setPassForm] = useState({ newPass: "", confirmPass: "" });
 
   // Transfer States
@@ -44,34 +66,35 @@ export default function DashboardPage() {
   const [transferSuccess, setTransferSuccess] = useState<string | null>(null);
 
   const loadDashboardData = useCallback(async () => {
-  try {
-    setLoading(true);
-    const token = await getToken();
-    if (token && user) {
-      // Añadimos un timestamp para forzar al backend a darnos datos frescos
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me?t=${Date.now()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const bankData = await res.json();
-      
-      const txHistory = await getTransactionHistory(token).catch(() => []);
-      
-      setData(bankData);
-      setHistory(txHistory);
+    try {
+      setLoading(true);
+      const token = await getToken();
+      if (token && user) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me?t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch user data");
+        
+        const bankData: UserData = await res.json();
+        
+        const txHistory = await getTransactionHistory(token).catch(() => []);
+        
+        setData(bankData);
+        setHistory(txHistory);
+      }
+    } catch (err) {
+      console.error("SYS_BOOT_ERR:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("SYS_BOOT_ERR:", err);
-  } finally {
-    setLoading(false);
-  }
-}, [getToken, user]);
-  useEffect(() => {
-    if (user) loadDashboardData();
-  }, [loadDashboardData, user]);
+  }, [getToken, user]);
 
-  // FIX: Cambio de Alias (Redirigido a Proxy /api/user-actions)
-  // FIX: Cambio de Alias - Apuntando directamente al Backend de NestJS
-  // app/dashboard/page.tsx
+  useEffect(() => {
+    if (user) {
+      loadDashboardData();
+    }
+  }, [loadDashboardData, user]);
 
   const handleUpdateAlias = async () => {
     if (!newAlias) return;
@@ -79,25 +102,20 @@ export default function DashboardPage() {
       setTransferLoading(true);
       const token = await getToken();
       
-      // 1. Usamos la ruta correcta: /users/sync-cbu
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sync-cbu`, {
         method: "POST", 
         headers: { 
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json" 
         },
-        
-
         body: JSON.stringify({ 
-          // Usamos los datos de Clerk (user) en lugar de 'data'
           nombre: user?.firstName || "Sujeto", 
           apellido: user?.lastName || "Cayman",
-          dni: "12345678", // O el DNI real si lo tienes en un estado
+          dni: "12345678",
           alias: newAlias.toLowerCase() 
         }),
       });
 
-      // 3. Si el backend responde 404, 400 o 500, lanzamos error
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "FALLO_EN_SERVIDOR");
@@ -106,9 +124,7 @@ export default function DashboardPage() {
       setAliasStatus({ type: 'success', msg: "ALIAS_REWRITTEN_SUCCESSFULLY" });
       setIsEditingAlias(false);
       
-      // 4. Refrescamos los datos para que el nuevo alias aparezca en pantalla
       await loadDashboardData();
-
     } catch (err: any) {
       console.error("ALIAS_ERR:", err);
       setAliasStatus({ type: 'error', msg: "ALIAS_REWRITE_FAILED" });
@@ -118,55 +134,42 @@ export default function DashboardPage() {
     }
   };
 
-  // FIX: Cambio de Contraseña (Redirigido a Proxy /api/user-actions)
-  // En app/dashboard/page.tsx
-// Dentro de DashboardPage en app/dashboard/page.tsx
-const handlePasswordChange = async () => {
-  // 1. Validaciones básicas
-  if (!passForm.newPass || passForm.newPass !== passForm.confirmPass) {
-    setAliasStatus({ type: 'error', msg: "PASSWORDS_DO_NOT_MATCH_OR_EMPTY" });
-    return;
-  }
-  
-  try {
-    setTransferLoading(true);
-
-    // 2. Obtener el token de sesión de Clerk para autenticar ante tu Backend
-    // 'getToken' viene del hook useAuth() de Clerk
-    const token = await getToken();
-
-    // 3. Llamada a tu servidor NestJS (Cayman Backend)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/change-password`, {
-      method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json" 
-      },
-      body: JSON.stringify({ newPassword: passForm.newPass }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      // Si el backend tiró error (ej: contraseña muy corta), usamos ese mensaje
-      throw new Error(data.message || "SEC_UPDATE_FAILED");
+  const handlePasswordChange = async () => {
+    if (!passForm.newPass || passForm.newPass !== passForm.confirmPass) {
+      setAliasStatus({ type: 'error', msg: "PASSWORDS_DO_NOT_MATCH_OR_EMPTY" });
+      return;
     }
     
-    // 4. Éxito
-    setAliasStatus({ type: 'success', msg: "CLERK_CREDENTIALS_REWRITTEN" });
-    setPassForm({ newPass: "", confirmPass: "" });
+    try {
+      setTransferLoading(true);
+      const token = await getToken();
 
-  } catch (err: any) {
-    console.error("AUTH_ERR:", err);
-    // Formateamos el mensaje para que combine con tus estilos (ej: "PASSWORD_TOO_SHORT")
-    const errorMsg = err.message.toUpperCase().replace(/ /g, "_");
-    setAliasStatus({ type: 'error', msg: errorMsg });
-  } finally {
-    setTransferLoading(false);
-    // Limpiar el mensaje después de 4 segundos
-    setTimeout(() => setAliasStatus(null), 4000);
-  }
-};
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/change-password`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({ newPassword: passForm.newPass }),
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(resData.message || "SEC_UPDATE_FAILED");
+      }
+      
+      setAliasStatus({ type: 'success', msg: "CLERK_CREDENTIALS_REWRITTEN" });
+      setPassForm({ newPass: "", confirmPass: "" });
+    } catch (err: any) {
+      console.error("AUTH_ERR:", err);
+      const errorMsg = (err.message || "").toUpperCase().replace(/ /g, "_");
+      setAliasStatus({ type: 'error', msg: errorMsg });
+    } finally {
+      setTransferLoading(false);
+      setTimeout(() => setAliasStatus(null), 4000);
+    }
+  };
 
   const handleCopyCbu = () => {
     if (data?.accountNumber) {
@@ -181,15 +184,25 @@ const handlePasswordChange = async () => {
       setTransferLoading(true);
       setTransferError(null);
       const token = await getToken();
-      const res = await fetch(`${API_URL}/transactions/transfer`, {
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/transactions/transfer`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({ cbuDestino, monto, motivo }),
       });
+
       const responseData = await res.json();
       if (!res.ok) throw new Error(responseData.message || "XFER_FAILED");
+
       setTransferSuccess(`XFER_SUCCESS: CREDITS_INJECTED`);
-      setTimeout(() => { setShowTransferModal(false); setTransferSuccess(null); }, 2000);
+      setTimeout(() => { 
+        setShowTransferModal(false); 
+        setTransferSuccess(null); 
+      }, 2000);
+      
       await loadDashboardData();
     } catch (err: any) {
       setTransferError(err.message || "XFER_FATAL_ERROR");
@@ -210,7 +223,7 @@ const handlePasswordChange = async () => {
   }
 
   const linkedCbu = hasLinkedCbu(data?.accountNumber);
-  const movements = history.length ? history : data?.transactions ?? [];
+  const movements = history.length ? history : (data?.transactions ?? []);
 
   return (
     <div className="min-h-screen bg-black px-4 py-6 font-mono text-emerald-500 sm:px-6 lg:px-8">
@@ -451,7 +464,7 @@ const handlePasswordChange = async () => {
           )}
         </section>
 
-        {/* MODAL TRANSFERENCIA (Restaurado Completo) */}
+        {/* MODAL TRANSFERENCIA */}
         {showTransferModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
             <div className="relative w-full max-w-md border border-emerald-500 bg-black p-8 shadow-[0_0_60px_rgba(0,255,0,0.15)]">
@@ -472,7 +485,6 @@ const handlePasswordChange = async () => {
   );
 }
 
-// Sub-componente de Formulario (Integrado para que no falte nada)
 function TransferForm({ currentBalance, onSubmit, loading }: any) {
   const [formData, setFormData] = useState({ cbu: "", amount: "", reason: "" });
 
