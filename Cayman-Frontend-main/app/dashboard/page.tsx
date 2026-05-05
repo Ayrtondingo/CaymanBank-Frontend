@@ -125,7 +125,7 @@ export default function DashboardPage() {
       setIsEditingAlias(false);
       
       await loadDashboardData();
-    } catch (err: any) {
+    } catch (err) {
       console.error("ALIAS_ERR:", err);
       setAliasStatus({ type: 'error', msg: "ALIAS_REWRITE_FAILED" });
     } finally {
