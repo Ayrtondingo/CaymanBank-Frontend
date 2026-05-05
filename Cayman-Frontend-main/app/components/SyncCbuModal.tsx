@@ -25,7 +25,7 @@ export default function SyncCbuModal({ onRecordCreated }: { onRecordCreated: () 
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || API_URL}/users/sync-cbu`, {
+      const res = await fetch(`${API_URL}/users/sync-cbu`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
