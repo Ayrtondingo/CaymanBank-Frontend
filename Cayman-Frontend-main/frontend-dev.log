@@ -1,0 +1,20 @@
+
+> cayman-frontend@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.1.0
+   - Local:        http://localhost:3000
+   - Network:      http://26.250.145.146:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 4.7s
+ ✓ Compiled /middleware in 371ms (209 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2.5s (1154 modules)
+ GET / 307 in 3035ms
+ ✓ Compiled /_not-found in 384ms (1155 modules)
+ GET /dashboard 404 in 480ms
+ GET /dashboard 404 in 10ms
+ ✓ Compiled /sign-in/[[...sign-in]] in 272ms (1146 modules)
+ GET /sign-in 200 in 712ms

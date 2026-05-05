@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Esto obliga a Tailwind a mirar tus archivos de la carpeta app */
+@source "./**/*.{js,ts,jsx,tsx,mdx}";
+
+:root {
+  background-color: #020617; /* Slate-950 por defecto */
+  color: white;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
