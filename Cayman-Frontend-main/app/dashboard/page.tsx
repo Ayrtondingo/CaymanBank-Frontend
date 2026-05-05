@@ -10,7 +10,6 @@ import {
 import SyncUser from "../components/SyncUser";
 import SyncCbuModal from "../components/SyncCbuModal";
 
-// --- HELPERS ---
 const hasLinkedCbu = (accountNumber?: string | null) => 
   Boolean(accountNumber && /^\d{22}$/.test(accountNumber));
 
@@ -20,7 +19,6 @@ const money = (amount: number) =>
     currency: "ARS",
   });
 
-// --- INTERFACES ---
 interface Transaction {
   date?: string;
   to?: string;
@@ -54,13 +52,11 @@ export default function DashboardPage() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Alias & Security States
   const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [newAlias, setNewAlias] = useState("");
   const [aliasStatus, setAliasStatus] = useState<AliasStatus | null>(null);
   const [passForm, setPassForm] = useState({ newPass: "", confirmPass: "" });
 
-  // Transfer States
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferSuccess, setTransferSuccess] = useState<string | null>(null);
@@ -241,8 +237,6 @@ export default function DashboardPage() {
       <div className="pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_3px,3px_100%]" />
 
       <main className="relative mx-auto grid max-w-7xl gap-6 lg:grid-cols-[260px_1fr]">
-        
-        {/* SIDEBAR OPERATIVO */}
         <aside className="hidden border border-emerald-900 bg-black/80 p-4 lg:block">
           <div className="mb-8 flex items-center gap-3 border-b border-emerald-900 pb-4">
             <Terminal size={24} className="text-emerald-400" />
@@ -277,7 +271,6 @@ export default function DashboardPage() {
           </nav>
         </aside>
 
-        {/* CONTENT AREA */}
         <section className="space-y-6">
           <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-900 pb-4">
             <div>
@@ -474,7 +467,6 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* MODAL TRANSFERENCIA */}
         {showTransferModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
             <div className="relative w-full max-w-md border border-emerald-500 bg-black p-8 shadow-[0_0_60px_rgba(0,255,0,0.15)]">
