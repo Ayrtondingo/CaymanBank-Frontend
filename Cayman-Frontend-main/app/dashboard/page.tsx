@@ -544,4 +544,4 @@ function TransferForm({ currentBalance, onSubmit, loading }: TransferFormProps) 
       </button>
     </form>
   );
-}
+}                  
