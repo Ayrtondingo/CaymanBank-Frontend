@@ -261,7 +261,7 @@ export default function DashboardPage() {
             ].map((item) => (
               <button 
                 key={item.id}
-                onClick={() => setActiveTab(item.id as any)} 
+                onClick={() => setActiveTab(item.id as 'main' | 'accounts' | 'history' | 'security' | 'network')} 
                 className={`flex w-full items-center gap-3 px-3 py-3 transition-all ${activeTab === item.id ? 'bg-emerald-500/10 text-emerald-400 border-l-2 border-emerald-500' : 'text-emerald-900 hover:text-emerald-500'}`}
               >
                  <item.icon size={14} /> - {item.label}
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {movements.map((tx, idx: number) => (
+                        {movements.map((tx, idx) => (
                           <tr key={idx} className="border-b border-emerald-900/30 hover:bg-emerald-500/5 transition-colors group">
                             <td className="p-4 text-emerald-700 font-mono italic">{tx.date ? new Date(tx.date).toLocaleString() : 'PENDING'}</td>
                             <td className="p-4 font-bold text-emerald-500 group-hover:text-emerald-300">{tx.to || tx.from || 'NODE_SYS'}</td>
