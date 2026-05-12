@@ -99,16 +99,13 @@ export default function DashboardPage() {
       const token = await getToken();
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       
-      const res = await fetch(`${apiUrl}/users/sync-cbu`, {
+      const res = await fetch(`${apiUrl}/users/alias`, {
         method: "POST", 
         headers: { 
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({ 
-          nombre: user?.firstName || "Sujeto", 
-          apellido: user?.lastName || "Cayman",
-          dni: "12345678",
           alias: newAlias.toLowerCase() 
         }),
       });
