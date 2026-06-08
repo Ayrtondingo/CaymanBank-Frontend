@@ -1,48 +1,53 @@
 'use client';
 
 import Link from "next/link";
-import { Landmark, LogIn } from "lucide-react";
+import { Terminal } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default function AuthHeader() {
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b border-[var(--border)] bg-white/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/dashboard" className="flex items-center gap-3" aria-label="Ir al inicio">
-          <span className="grid size-10 place-items-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
-            <Landmark size={22} />
-          </span>
-          <span>
-            <span className="block text-sm font-bold leading-tight text-[var(--foreground)]">Cayman Bank</span>
-            <span className="block text-xs leading-tight text-[var(--muted)]">Banca digital</span>
-          </span>
-        </Link>
+    <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b border-[#001a00] bg-black/90 px-6 backdrop-blur-md">
+      <Link href="/" className="flex items-center gap-3 group" aria-label="Inicio">
+        <Terminal size={16} className="text-[#00ff41] group-hover:animate-pulse" />
+        <span className="text-xs font-black tracking-[0.3em] text-[#00ff41] uppercase">
+          CAYMAN<span className="text-[#004400]">::</span>BANK
+        </span>
+      </Link>
 
-        <SignedIn>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right text-xs sm:block">
-              <p className="font-semibold text-[var(--foreground)]">Sesion segura</p>
-              <p className="text-[var(--muted)]">Conexion protegida</p>
-            </div>
+      <SignedIn>
+        <div className="flex items-center gap-4">
+          <div className="hidden flex-col items-end text-[9px] font-black uppercase leading-tight tracking-widest text-[#005500] sm:flex">
+            <span className="text-[#00ff41]">SESSION_ACTIVE</span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#00ff41] shadow-[0_0_6px_#00ff41]" />
+              SECURE_LINK: OK
+            </span>
+          </div>
+          <div className="border-l border-[#001a00] pl-4">
             <UserButton
               appearance={{
                 elements: {
-                  userButtonAvatarBox: "rounded-2xl border border-[var(--border)] w-10 h-10",
-                  userButtonPopoverCard: "rounded-3xl border border-slate-200 shadow-xl",
+                  userButtonAvatarBox: "rounded-none border border-[#00ff41] w-8 h-8",
+                  userButtonPopoverCard: "bg-black border border-[#003300] rounded-none font-mono shadow-[0_0_30px_rgba(0,255,65,0.1)]",
+                  userButtonPopoverActionButtonText: "text-[#00ff41] uppercase text-[10px] font-mono",
                   userButtonPopoverFooter: "hidden",
+                  userButtonPopoverActionButtonIcon: "text-[#00ff41]",
                 },
               }}
             />
           </div>
-        </SignedIn>
+        </div>
+      </SignedIn>
 
-        <SignedOut>
-          <Link href="/sign-in" className="primary-button">
-            <LogIn size={18} />
-            Ingresar
-          </Link>
-        </SignedOut>
-      </div>
+      <SignedOut>
+        <Link
+          href="/sign-in"
+          className="btn-terminal text-[10px]"
+        >
+          <Terminal size={12} />
+          ACCESS_SYSTEM
+        </Link>
+      </SignedOut>
     </header>
   );
 }

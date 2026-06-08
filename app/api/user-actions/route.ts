@@ -1,4 +1,3 @@
-// app/api/user-actions/route.ts
 import { NextResponse } from 'next/server';
 
 export async function PUT(request: Request) {
@@ -8,14 +7,14 @@ export async function PUT(request: Request) {
 
     if (action === 'update-alias') {
       const targetUrl = `https://centralbank.brocoly.cc/api/persons/${data.cbu}/alias`;
-      
+
       const response = await fetch(targetUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-environment': 'test',
-          'x-api-key': process.env.CENTRAL_BANK_API_KEY ?? ''
+          'x-api-key': process.env.CENTRAL_BANK_API_KEY ?? '',
         },
         body: JSON.stringify({ alias: data.alias }),
       });

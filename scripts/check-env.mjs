@@ -8,16 +8,10 @@ if (existsSync(localEnvPath)) {
 
   for (const line of localEnv.split(/\r?\n/)) {
     const trimmedLine = line.trim();
-
-    if (!trimmedLine || trimmedLine.startsWith("#")) {
-      continue;
-    }
+    if (!trimmedLine || trimmedLine.startsWith("#")) continue;
 
     const separatorIndex = trimmedLine.indexOf("=");
-
-    if (separatorIndex === -1) {
-      continue;
-    }
+    if (separatorIndex === -1) continue;
 
     const key = trimmedLine.slice(0, separatorIndex).trim();
     const value = trimmedLine.slice(separatorIndex + 1).trim();

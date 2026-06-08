@@ -17,7 +17,14 @@ export async function PUT(request: Request) {
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
+<<<<<<< HEAD
   } catch {
     return NextResponse.json({ message: 'INTERNAL_PROXY_ERROR' }, { status: 500 });
   }
 }
+=======
+  } catch (error) {
+    return NextResponse.json({ message: 'INTERNAL_PROXY_ERROR' }, { status: 500 });
+  }
+}
+>>>>>>> 5f796dd4beb798b55b4a140018bb6ca1f1a2b39d
