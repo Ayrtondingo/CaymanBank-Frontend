@@ -26,7 +26,6 @@ const requiredEnvVars = [
   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
   "CLERK_SECRET_KEY",
   "NEXT_PUBLIC_API_URL",
-  "CENTRAL_BANK_API_KEY",
 ];
 
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
