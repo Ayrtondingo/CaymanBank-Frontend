@@ -6,7 +6,7 @@ import { API_URL, getTransactionHistory } from "@/lib/api";
 import {
   Terminal, Send, Loader2, Eye, EyeOff, X, ReceiptText,
   ShieldCheck, UserCircle, Copy, CheckCircle2, LogOut,
-  LayoutDashboard, RefreshCw, Users, Crown, ChevronDown,
+  LayoutDashboard, RefreshCw, Users, Crown, ChevronDown, UserPlus,
 } from "lucide-react";
 import SyncUser from "../components/SyncUser";
 import SyncCbuModal from "../components/SyncCbuModal";
@@ -60,7 +60,7 @@ const shortCbu = (cbu?: string | null) =>
 
 const ROLE_LABEL: Record<Role, string> = {
   user: 'CLIENT',
-  admin: 'ADMIN',
+  admin: 'EMPLOYEE',
   gerente: 'MANAGER',
 };
 
@@ -118,8 +118,8 @@ export default function DashboardPage() {
     { id: 'history', label: 'XFER_LOG', icon: ReceiptText },
     { id: 'accounts', label: 'ACCOUNTS', icon: UserCircle },
     { id: 'security', label: 'SECURITY', icon: ShieldCheck },
-    { id: 'admin', label: 'ADMIN_PANEL', icon: Users, minRole: 'admin' },
-    { id: 'manager', label: 'MGR_PANEL', icon: Crown, minRole: 'gerente' },
+    { id: 'admin', label: 'EMPLOYEE_PANEL', icon: Users, minRole: 'admin' },
+    { id: 'manager', label: 'MANAGER_PANEL', icon: Crown, minRole: 'gerente' },
   ];
 
   const visibleTabs = navTabs.filter((t) => {
@@ -437,7 +437,7 @@ export default function DashboardPage() {
 
               {/* ── ADMIN PANEL ── */}
               {activeTab === 'admin' && (role === 'admin' || role === 'gerente') && (
-                <AdminPanel getToken={getToken} currentRole={role} onNotice={showNotice} />
+                <AdminPanel getToken={getToken} onNotice={showNotice} />
               )}
 
               {/* ── MANAGER PANEL ── */}
@@ -534,15 +534,13 @@ function TransferForm({
   );
 }
 
-// ─── Admin Panel ───────────────────────────────────────────────────────────────
+// ─── Admin Panel (Empleado) ────────────────────────────────────────────────────
 
 function AdminPanel({
   getToken,
-  currentRole,
   onNotice,
 }: {
   getToken: () => Promise<string | null>;
-  currentRole: Role;
   onNotice: (n: Notice) => void;
 }) {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -558,9 +556,10 @@ function AdminPanel({
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
-      setUsers(await res.json());
+      const all: AdminUser[] = await res.json();
+      setUsers(all.filter((u) => u.role === 'user'));
     } catch {
-      onNotice({ type: 'error', msg: 'ERR: CANNOT_FETCH_USERS' });
+      onNotice({ type: 'error', msg: 'ERR: CANNOT_FETCH_CLIENTS' });
     } finally { setLoading(false); }
   }, [getToken, onNotice]);
 
@@ -590,11 +589,14 @@ function AdminPanel({
     <div className="border border-[#002a00] bg-black">
       <div className="flex items-center justify-between border-b border-[#001a00] px-5 py-3">
         <p className="text-[10px] font-black uppercase tracking-widest text-[#00ff41]">
-          ADMIN_PANEL // ALL_NODES
+          EMPLOYEE_PANEL // CLIENTS_ONLY
         </p>
-        <button onClick={fetchUsers} className="btn-terminal text-[9px] py-1 px-3">
-          <RefreshCw size={10} /> REFRESH
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-[9px] text-[#003300]">TOTAL: {users.length}</span>
+          <button onClick={fetchUsers} className="btn-terminal text-[9px] py-1 px-3">
+            <RefreshCw size={10} /> REFRESH
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -604,12 +606,15 @@ function AdminPanel({
           <table className="w-full border-collapse text-[10px] uppercase">
             <thead>
               <tr className="border-b border-[#001a00]">
-                {['HOLDER', 'EMAIL', 'ROLE', 'CBU', 'BALANCE', 'ACTIONS'].map((h) => (
+                {['HOLDER', 'EMAIL', 'CBU_STATUS', 'BALANCE', 'ACTIONS'].map((h) => (
                   <th key={h} className="px-4 py-3 text-left font-black tracking-widest text-[#003300]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
+              {users.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-[#003300]">NO_CLIENTS_FOUND</td></tr>
+              )}
               {users.map((u) => (
                 <>
                   <tr key={u.id} className="border-b border-[#000d00] hover:bg-[rgba(0,255,65,0.02)]">
@@ -617,14 +622,13 @@ function AdminPanel({
                     <td className="px-4 py-3 text-[#005500]">{u.email}</td>
                     <td className="px-4 py-3">
                       <span className={`border px-2 py-0.5 ${
-                        u.role === 'gerente' ? 'border-yellow-700 text-yellow-500' :
-                        u.role === 'admin' ? 'border-[#004400] text-[#00ff41]' :
-                        'border-[#002200] text-[#004400]'
+                        isCbuLinked(u.accountNumber)
+                          ? 'border-[#004400] text-[#00ff41]'
+                          : 'border-[#550000] text-[#ff3333]'
                       }`}>
-                        {ROLE_LABEL[u.role]}
+                        {isCbuLinked(u.accountNumber) ? 'LINKED' : 'PENDING'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[#003300]">{shortCbu(u.accountNumber)}</td>
                     <td className="px-4 py-3 font-black text-[#00ff41]">{money(u.balance)}</td>
                     <td className="px-4 py-3">
                       <button
@@ -638,7 +642,7 @@ function AdminPanel({
                   </tr>
                   {adjustId === u.id && (
                     <tr key={`${u.id}-adj`} className="border-b border-[#001a00] bg-[rgba(0,255,65,0.02)]">
-                      <td colSpan={6} className="px-4 py-3">
+                      <td colSpan={5} className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <p className="text-[9px] text-[#004400]">BALANCE_DELTA:</p>
                           <input
@@ -666,7 +670,7 @@ function AdminPanel({
   );
 }
 
-// ─── Manager Panel ─────────────────────────────────────────────────────────────
+// ─── Manager Panel (Gerente) ───────────────────────────────────────────────────
 
 function ManagerPanel({
   getToken,
@@ -677,6 +681,9 @@ function ManagerPanel({
 }) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [grantId, setGrantId] = useState<string | null>(null);
+  const [grantForm, setGrantForm] = useState({ nombre: '', apellido: '', dni: '' });
+  const [grantLoading, setGrantLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -710,56 +717,171 @@ function ManagerPanel({
     }
   };
 
+  const handleGrantAccess = async (userId: string) => {
+    const { nombre, apellido, dni } = grantForm;
+    if (!nombre.trim() || !apellido.trim() || !dni.trim()) return;
+    try {
+      setGrantLoading(true);
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/admin/users/${userId}/sync-cbu`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre.trim(), apellido: apellido.trim(), dni: dni.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      onNotice({ type: 'success', msg: 'ACCESS_GRANTED: CLIENT_ACTIVATED' });
+      setGrantId(null);
+      setGrantForm({ nombre: '', apellido: '', dni: '' });
+      await fetchUsers();
+    } catch {
+      onNotice({ type: 'error', msg: 'ERR: GRANT_ACCESS_FAILED' });
+    } finally { setGrantLoading(false); }
+  };
+
+  const totalClientes = users.filter((u) => u.role === 'user').length;
+  const totalEmpleados = users.filter((u) => u.role === 'admin').length;
+  const totalBalance = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+  const pendingActivation = users.filter((u) => u.role === 'user' && !isCbuLinked(u.accountNumber)).length;
+
   return (
-    <div className="border border-yellow-900/50 bg-black">
-      <div className="border-b border-yellow-900/30 px-5 py-3">
-        <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500">
-          MANAGER_PANEL // CLEARANCE: GERENTE
-        </p>
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          { label: 'TOTAL_CLIENTS', value: String(totalClientes) },
+          { label: 'TOTAL_EMPLOYEES', value: String(totalEmpleados) },
+          { label: 'PENDING_ACTIVATION', value: String(pendingActivation) },
+          { label: 'SYSTEM_BALANCE', value: money(totalBalance) },
+        ].map((s) => (
+          <div key={s.label} className="border border-yellow-900/40 bg-black p-4">
+            <p className="text-[8px] font-black uppercase tracking-widest text-yellow-900">{s.label}</p>
+            <p className="mt-1 text-lg font-black text-yellow-400 break-all">{s.value}</p>
+          </div>
+        ))}
       </div>
 
-      {loading ? (
-        <div className="py-12 text-center"><Loader2 size={20} className="mx-auto animate-spin text-yellow-600" /></div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-[10px] uppercase">
-            <thead>
-              <tr className="border-b border-yellow-900/30">
-                {['HOLDER', 'EMAIL', 'CURRENT_ROLE', 'BALANCE', 'SET_ROLE'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-black tracking-widest text-yellow-900">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-b border-[#0d0d00] hover:bg-yellow-900/5">
-                  <td className="px-4 py-3 font-black text-yellow-400">{u.fullName}</td>
-                  <td className="px-4 py-3 text-yellow-900">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`border px-2 py-0.5 ${
-                      u.role === 'gerente' ? 'border-yellow-700 text-yellow-500' :
-                      u.role === 'admin' ? 'border-[#004400] text-[#00ff41]' :
-                      'border-[#002200] text-[#004400]'
-                    }`}>{ROLE_LABEL[u.role]}</span>
-                  </td>
-                  <td className="px-4 py-3 font-black text-yellow-400">{money(u.balance)}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={u.role}
-                      onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
-                      className="bg-black border border-yellow-900 text-yellow-500 text-[9px] px-2 py-1 font-mono uppercase outline-none cursor-pointer hover:border-yellow-600"
-                    >
-                      <option value="user">CLIENT</option>
-                      <option value="admin">ADMIN</option>
-                      <option value="gerente">MANAGER</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Tabla */}
+      <div className="border border-yellow-900/50 bg-black">
+        <div className="flex items-center justify-between border-b border-yellow-900/30 px-5 py-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500">
+            MANAGER_PANEL // FULL_CLEARANCE
+          </p>
+          <button
+            onClick={fetchUsers}
+            className="btn-terminal text-[9px] py-1 px-3"
+            style={{ borderColor: '#713f12', color: '#eab308' }}
+          >
+            <RefreshCw size={10} /> REFRESH
+          </button>
         </div>
-      )}
+
+        {loading ? (
+          <div className="py-12 text-center"><Loader2 size={20} className="mx-auto animate-spin text-yellow-600" /></div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-[10px] uppercase">
+              <thead>
+                <tr className="border-b border-yellow-900/30">
+                  {['HOLDER', 'EMAIL', 'ROLE', 'BALANCE', 'SET_ROLE', 'ACTIONS'].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left font-black tracking-widest text-yellow-900">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <>
+                    <tr key={u.id} className="border-b border-[#0d0d00] hover:bg-yellow-900/5">
+                      <td className="px-4 py-3 font-black text-yellow-400">{u.fullName}</td>
+                      <td className="px-4 py-3 text-yellow-900">{u.email}</td>
+                      <td className="px-4 py-3">
+                        <span className={`border px-2 py-0.5 ${
+                          u.role === 'gerente' ? 'border-yellow-700 text-yellow-500' :
+                          u.role === 'admin' ? 'border-[#004400] text-[#00ff41]' :
+                          'border-[#002200] text-[#004400]'
+                        }`}>{ROLE_LABEL[u.role]}</span>
+                      </td>
+                      <td className="px-4 py-3 font-black text-yellow-400">{money(u.balance)}</td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
+                          className="bg-black border border-yellow-900 text-yellow-500 text-[9px] px-2 py-1 font-mono uppercase outline-none cursor-pointer hover:border-yellow-600"
+                        >
+                          <option value="user">CLIENT</option>
+                          <option value="admin">EMPLOYEE</option>
+                          <option value="gerente">MANAGER</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        {!isCbuLinked(u.accountNumber) && u.role === 'user' ? (
+                          <button
+                            onClick={() => {
+                              setGrantId(grantId === u.id ? null : u.id);
+                              setGrantForm({ nombre: '', apellido: '', dni: '' });
+                            }}
+                            className="flex items-center gap-1 border border-yellow-800 px-2 py-1 text-[8px] font-black uppercase text-yellow-700 hover:border-yellow-500 hover:text-yellow-400 transition-colors"
+                          >
+                            <UserPlus size={9} />
+                            GRANT_ACCESS
+                          </button>
+                        ) : (
+                          <span className="text-[9px] text-[#004400]">
+                            {isCbuLinked(u.accountNumber) ? 'ACTIVE' : '—'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                    {grantId === u.id && (
+                      <tr key={`${u.id}-grant`} className="border-b border-yellow-900/30 bg-yellow-900/5">
+                        <td colSpan={6} className="px-4 py-4">
+                          <p className="mb-3 text-[9px] font-black uppercase tracking-widest text-yellow-600">
+                            ACTIVATE_CLIENT // {u.email}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <input
+                              value={grantForm.nombre}
+                              onChange={(e) => setGrantForm({ ...grantForm, nombre: e.target.value })}
+                              className="input-terminal w-36 text-xs py-1"
+                              placeholder="FIRST_NAME"
+                              style={{ borderColor: '#713f12', color: '#eab308' }}
+                            />
+                            <input
+                              value={grantForm.apellido}
+                              onChange={(e) => setGrantForm({ ...grantForm, apellido: e.target.value })}
+                              className="input-terminal w-36 text-xs py-1"
+                              placeholder="LAST_NAME"
+                              style={{ borderColor: '#713f12', color: '#eab308' }}
+                            />
+                            <input
+                              value={grantForm.dni}
+                              onChange={(e) => setGrantForm({ ...grantForm, dni: e.target.value.replace(/\D/g, '') })}
+                              className="input-terminal w-32 text-xs py-1"
+                              placeholder="ID_NUMBER"
+                              inputMode="numeric"
+                              style={{ borderColor: '#713f12', color: '#eab308' }}
+                            />
+                            <button
+                              onClick={() => handleGrantAccess(u.id)}
+                              disabled={grantLoading || !grantForm.nombre || !grantForm.apellido || !grantForm.dni}
+                              className="flex items-center gap-1 border border-yellow-700 px-3 py-1 text-[9px] font-black uppercase text-yellow-500 hover:bg-yellow-900/20 disabled:opacity-40 transition-colors"
+                            >
+                              {grantLoading ? <Loader2 size={10} className="animate-spin" /> : <CheckCircle2 size={10} />}
+                              ACTIVATE
+                            </button>
+                            <button onClick={() => setGrantId(null)} className="btn-terminal btn-danger text-[9px] py-1 px-2">
+                              <X size={10} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
