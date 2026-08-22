@@ -1,11 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/",
-  "/api(.*)",
-]);
+// El frontend ya no tiene route handlers propios: todo lo que necesita
+// credenciales pasa por el backend. Por eso `/api` dejo de ser publico.
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/"]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (isPublicRoute(request)) return;
