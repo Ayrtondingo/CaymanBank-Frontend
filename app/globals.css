@@ -223,3 +223,38 @@ body * {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------- Logo ---
+   Los archivos son JPEG con el fondo quemado, sin canal alfa: hay una version
+   para fondo claro y otra para oscuro. Se eligen por CSS y no por JS, asi no
+   hay parpadeo mientras React hidrata.
+
+   El emblema ocupa el 33%-66% horizontal y el 15%-57% vertical del archivo,
+   asi que con el fondo al 300% y la posicion en 49.5%/36.5% queda encuadrado.
+   -------------------------------------------------------------------------- */
+
+.logo-marca {
+  background-image: url("/images/logo-claro.jpg");
+  background-size: 300%;
+  background-position: 49.5% 36.5%;
+  background-repeat: no-repeat;
+  background-color: #ffffff;
+}
+
+[data-theme="dark"] .logo-marca,
+.logo-marca-oscuro {
+  background-image: url("/images/isotipo-oscuro.jpg");
+  background-color: #171c24;
+}
+
+/* Lockup completo, para login y footer. */
+.logo-lockup {
+  background-image: url("/images/logo-claro.jpg");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+[data-theme="dark"] .logo-lockup {
+  background-image: url("/images/logo-oscuro.jpg");
+}

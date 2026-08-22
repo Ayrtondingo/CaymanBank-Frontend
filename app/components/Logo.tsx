@@ -1,21 +1,14 @@
-import Image from "next/image";
-
-const ARCHIVO = "/images/cayman-shadow-bank-logo.jpg";
-
 /**
- * El archivo es un JPEG con el fondo blanco quemado (sin canal alfa) y el
- * lockup completo: emblema arriba y el texto "CAYMAN SHADOW BANK" abajo.
- *
- * Para el isotipo se recorta con background-position en vez de <Image>: el
- * emblema ocupa aproximadamente el 33%–66% horizontal y el 15%–58% vertical,
- * asi que con el fondo al 300% queda encuadrado. Va sobre una pastilla blanca
- * porque el yacare es negro y desapareceria sobre el sidebar oscuro.
+ * Los archivos del logo son JPEG con el fondo quemado, sin canal alfa: hay una
+ * version para fondo claro y otra para oscuro. La eleccion se hace por CSS
+ * (ver `.logo-marca` en globals.css), no por JS, asi no parpadea al hidratar.
  */
 export function Logo({
   className = "",
   invertido = false,
 }: {
   className?: string;
+  /** Para fondos siempre oscuros, como el sidebar, que no siguen al tema. */
   invertido?: boolean;
 }) {
   return (
@@ -23,12 +16,10 @@ export function Logo({
       <span
         role="img"
         aria-label="Cayman Shadow Bank"
-        className="size-10 shrink-0 rounded-lg bg-white bg-no-repeat ring-1 ring-black/5"
-        style={{
-          backgroundImage: `url(${ARCHIVO})`,
-          backgroundSize: "300%",
-          backgroundPosition: "49.5% 36.5%",
-        }}
+        className={[
+          "size-10 shrink-0 rounded-lg",
+          invertido ? "logo-marca-oscuro" : "logo-marca ring-1 ring-black/5",
+        ].join(" ")}
       />
 
       <span className="leading-tight">
@@ -51,16 +42,13 @@ export function Logo({
   );
 }
 
-/** Lockup completo, tal cual el archivo original. Para login y footer. */
+/** Lockup completo, con el nombre incluido. Para login y footer. */
 export function LogoCompleto({ className = "" }: { className?: string }) {
   return (
-    <Image
-      src={ARCHIVO}
-      alt="Cayman Shadow Bank"
-      width={1536}
-      height={1024}
-      priority
-      className={`h-auto w-full rounded-xl ${className}`}
+    <span
+      role="img"
+      aria-label="Cayman Shadow Bank"
+      className={`logo-lockup block ${className}`}
     />
   );
 }
