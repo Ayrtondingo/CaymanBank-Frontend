@@ -23,7 +23,6 @@ export default function CuentasPage() {
 
   const [seleccionada, setSeleccionada] = useState<string | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[] | null>(null);
-  const [operacion, setOperacion] = useState<"deposito" | "extraccion" | null>(null);
   const [cambioAbierto, setCambioAbierto] = useState(false);
   const [abriendoUsd, setAbriendoUsd] = useState(false);
 
@@ -127,16 +126,6 @@ export default function CuentasPage() {
                   ? `Caja en ${cuentaActiva.currency} · ${cbuLegible(cuentaActiva.cbu)}`
                   : undefined
               }
-              accion={
-                <div className="flex gap-2">
-                  <Boton variante="secundario" onClick={() => setOperacion("deposito")}>
-                    Depositar
-                  </Boton>
-                  <Boton variante="secundario" onClick={() => setOperacion("extraccion")}>
-                    Extraer
-                  </Boton>
-                </div>
-              }
             />
 
             {movimientos === null ? (
@@ -180,17 +169,6 @@ export default function CuentasPage() {
           </Card>
         </>
       )}
-
-      <ModalCaja
-        operacion={operacion}
-        cuenta={cuentaActiva}
-        onCerrar={() => setOperacion(null)}
-        onHecho={async () => {
-          setOperacion(null);
-          await refrescar();
-          if (cuentaActiva?.cbu) await cargarMovimientos(cuentaActiva.cbu);
-        }}
-      />
 
       <ModalCambio
         abierto={cambioAbierto}
@@ -287,88 +265,6 @@ function TarjetaCuenta({
         )}
       </div>
     </button>
-  );
-}
-
-function ModalCaja({
-  operacion,
-  cuenta,
-  onCerrar,
-  onHecho,
-}: {
-  operacion: "deposito" | "extraccion" | null;
-  cuenta: Cuenta | null;
-  onCerrar: () => void;
-  onHecho: () => void;
-}) {
-  const { api, avisar } = useBank();
-  const [monto, setMonto] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const esDeposito = operacion === "deposito";
-
-  async function enviar(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-
-    const valor = Number(monto);
-    if (!Number.isFinite(valor) || valor <= 0) {
-      setError("Ingresá un importe mayor a cero.");
-      return;
-    }
-    if (!cuenta?.cbu) {
-      setError("La cuenta no tiene CBU.");
-      return;
-    }
-
-    setEnviando(true);
-    try {
-      if (esDeposito) await api.depositar(cuenta.cbu, valor);
-      else await api.extraer(cuenta.cbu, valor);
-
-      avisar("exito", esDeposito ? "Depósito acreditado." : "Extracción realizada.");
-      setMonto("");
-      onHecho();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setEnviando(false);
-    }
-  }
-
-  return (
-    <Modal
-      abierto={operacion !== null}
-      onCerrar={onCerrar}
-      titulo={esDeposito ? "Depositar" : "Extraer"}
-      descripcion={
-        cuenta ? `Caja en ${cuenta.currency} · saldo ${money(cuenta.balance, cuenta.currency)}` : ""
-      }
-    >
-      <form onSubmit={enviar} className="space-y-4">
-        <Campo etiqueta="Importe">
-          <Input
-            autoFocus
-            inputMode="decimal"
-            value={monto}
-            onChange={(e) => setMonto(e.target.value)}
-            placeholder="0,00"
-          />
-        </Campo>
-
-        {error && <Aviso tono="negativo">{error}</Aviso>}
-
-        <div className="flex justify-end gap-2 pt-1">
-          <Boton type="button" variante="secundario" onClick={onCerrar}>
-            Cancelar
-          </Boton>
-          <Boton type="submit" cargando={enviando}>
-            {esDeposito ? "Depositar" : "Extraer"}
-          </Boton>
-        </div>
-      </form>
-    </Modal>
   );
 }
 

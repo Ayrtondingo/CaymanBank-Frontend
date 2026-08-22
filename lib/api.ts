@@ -342,10 +342,6 @@ export function createApi(getToken: () => Promise<string | null>) {
     abrirCuenta: (moneda: Moneda) =>
       request<Cuenta>("/accounts", { method: "POST", body: { moneda } }),
     movimientos: (cbu: string) => request<Movimiento[]>(`/accounts/${cbu}/movimientos`),
-    depositar: (cbu: string, monto: number) =>
-      request<Movimiento>(`/accounts/${cbu}/depositos`, { method: "POST", body: { monto } }),
-    extraer: (cbu: string, monto: number) =>
-      request<Movimiento>(`/accounts/${cbu}/extracciones`, { method: "POST", body: { monto } }),
     cambiarDivisas: (operacion: "compra" | "venta", monto: number) =>
       request<{
         operacion: string;

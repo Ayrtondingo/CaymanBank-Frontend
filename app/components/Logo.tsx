@@ -3,9 +3,13 @@ import Image from "next/image";
 const ARCHIVO = "/images/cayman-shadow-bank-logo.jpg";
 
 /**
- * El archivo del logo es un JPEG con el fondo blanco quemado, sin canal alfa.
- * Sobre fondos oscuros se recorta al isotipo (el yacaré en el escudo) y se lo
- * apoya en una pastilla blanca, para que no aparezca un rectángulo blanco.
+ * El archivo es un JPEG con el fondo blanco quemado (sin canal alfa) y el
+ * lockup completo: emblema arriba y el texto "CAYMAN SHADOW BANK" abajo.
+ *
+ * Para el isotipo se recorta con background-position en vez de <Image>: el
+ * emblema ocupa aproximadamente el 33%–66% horizontal y el 15%–58% vertical,
+ * asi que con el fondo al 300% queda encuadrado. Va sobre una pastilla blanca
+ * porque el yacare es negro y desapareceria sobre el sidebar oscuro.
  */
 export function Logo({
   className = "",
@@ -16,21 +20,16 @@ export function Logo({
 }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-white">
-        {/* El isotipo ocupa el tercio superior del archivo: se escala y se
-            desplaza para mostrar solo esa parte. */}
-        <span className="relative size-9 overflow-hidden">
-          <Image
-            src={ARCHIVO}
-            alt=""
-            aria-hidden
-            width={1536}
-            height={1024}
-            priority
-            className="absolute top-1/2 left-1/2 max-w-none -translate-x-1/2 -translate-y-[62%] scale-[1.75]"
-          />
-        </span>
-      </span>
+      <span
+        role="img"
+        aria-label="Cayman Shadow Bank"
+        className="size-10 shrink-0 rounded-lg bg-white bg-no-repeat ring-1 ring-black/5"
+        style={{
+          backgroundImage: `url(${ARCHIVO})`,
+          backgroundSize: "300%",
+          backgroundPosition: "49.5% 36.5%",
+        }}
+      />
 
       <span className="leading-tight">
         <span
@@ -52,7 +51,7 @@ export function Logo({
   );
 }
 
-/** Logo completo, con el lockup original. Para pantallas de login y el footer. */
+/** Lockup completo, tal cual el archivo original. Para login y footer. */
 export function LogoCompleto({ className = "" }: { className?: string }) {
   return (
     <Image

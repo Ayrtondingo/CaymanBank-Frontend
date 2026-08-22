@@ -53,7 +53,7 @@ const PRODUCTOS = [
     titulo: "Cuentas en pesos y dólares",
     texto:
       "Caja de ahorro con CBU y alias propios. Comprá y vendé dólares a la cotización del momento, sin salir de la app.",
-    puntos: ["CBU y alias", "Cambio ARS ⇄ USD", "Sin costo de mantenimiento"],
+    puntos: ["$150.000 de bienvenida", "US$10.000 al abrir la de dólares", "CBU y alias propios"],
   },
   {
     icono: ICONOS.tarjeta,
@@ -101,12 +101,14 @@ const PASOS = [
   {
     numero: "02",
     titulo: "Validá tu identidad",
-    texto: "Cargá nombre, apellido y DNI. El Banco Central te asigna tu CBU.",
+    texto:
+      "Cargá nombre, apellido y DNI. El Banco Central te asigna tu CBU y te acreditamos $150.000.",
   },
   {
     numero: "03",
     titulo: "Empezá a operar",
-    texto: "Transferí, pedí tu tarjeta, invertí. Todo desde el mismo lugar.",
+    texto:
+      "Transferí, pedí tu tarjeta, invertí. Abrí tu caja en dólares y sumá US$10.000 más.",
   },
 ];
 
@@ -136,6 +138,11 @@ const FAQ = [
     pregunta: "¿Cuánto cuesta abrir una cuenta?",
     respuesta:
       "Nada. La caja de ahorro en pesos no tiene costo de apertura ni de mantenimiento, y la de dólares tampoco.",
+  },
+  {
+    pregunta: "¿Cómo son los $150.000 y los US$10.000 de regalo?",
+    respuesta:
+      "Los $150.000 se acreditan en tu caja en pesos cuando validás tu identidad y el Banco Central te asigna el CBU. Los US$10.000 se acreditan solos al abrir tu caja de ahorro en dólares. Los dos son tuyos: podés transferirlos, invertirlos o gastarlos sin condiciones.",
   },
   {
     pregunta: "¿Puedo transferir a otros bancos?",
@@ -223,9 +230,9 @@ export default async function LandingPage() {
         />
         <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:py-24">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-accent-300">
-              <span className="size-1.5 rounded-full bg-accent-300" />
-              Entidad N.º 19 · Red interbancaria
+            <span className="inline-flex items-center gap-2 rounded-full bg-accent-500/20 px-3 py-1 text-xs font-medium text-accent-300">
+              <span className="size-1.5 animate-pulse rounded-full bg-accent-300" />
+              $150.000 de regalo al abrir tu cuenta
             </span>
 
             <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1]">
@@ -245,12 +252,12 @@ export default async function LandingPage() {
 
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-white/15 pt-6">
               {[
-                ["6", "productos"],
-                ["24/7", "asistente"],
-                ["$0", "mantenimiento"],
+                ["$150.000", "de bienvenida"],
+                ["US$10.000", "en tu caja en dólares"],
+                ["$0", "de mantenimiento"],
               ].map(([valor, etiqueta]) => (
                 <div key={etiqueta}>
-                  <dt className="tabular text-2xl font-semibold text-white">{valor}</dt>
+                  <dt className="tabular text-xl font-semibold text-white sm:text-2xl">{valor}</dt>
                   <dd className="mt-0.5 text-xs text-brand-200">{etiqueta}</dd>
                 </div>
               ))}
@@ -368,6 +375,42 @@ export default async function LandingPage() {
         </div>
       </Seccion>
 
+      {/* ─────────────────────────────────────────────────────── Beneficios */}
+      <Seccion className="pb-20">
+        <div className="grid gap-5 sm:grid-cols-2">
+          {[
+            {
+              monto: "$150.000",
+              titulo: "Por abrir tu cuenta",
+              texto:
+                "Se acreditan en tu caja de ahorro en pesos apenas validás tu identidad. Sin condiciones ni permanencia.",
+              icono: ICONOS.cuenta,
+            },
+            {
+              monto: "US$10.000",
+              titulo: "Por abrir tu caja en dólares",
+              texto:
+                "Se acreditan automáticamente al crearla. Podés operarlos, transferirlos o venderlos cuando quieras.",
+              icono: ICONOS.inversion,
+            },
+          ].map((b) => (
+            <article
+              key={b.titulo}
+              className="relative overflow-hidden rounded-[var(--radius-card)] border border-accent-500/25 bg-accent-50 p-6"
+            >
+              <span className="flex size-11 items-center justify-center rounded-xl bg-accent-500 text-white">
+                <Icono d={b.icono} />
+              </span>
+              <p className="tabular mt-5 text-3xl font-semibold tracking-tight text-ink-900">
+                {b.monto}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-ink-800">{b.titulo}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{b.texto}</p>
+            </article>
+          ))}
+        </div>
+      </Seccion>
+
       {/* ────────────────────────────────────────────────────── Cómo empezar */}
       <Seccion id="como-empezar" className="border-y border-ink-200 bg-ink-50 py-20">
         <TituloSeccion
@@ -455,7 +498,8 @@ export default async function LandingPage() {
               Abrí tu cuenta en un minuto
             </h2>
             <p className="mx-auto mt-3 max-w-md text-brand-100">
-              Sin costo de apertura, sin mantenimiento y sin letra chica.
+              Te damos $150.000 de bienvenida y US$10.000 más al abrir tu caja en
+              dólares. Sin costo de apertura ni mantenimiento.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <BotonesEntrada invertido />
