@@ -328,10 +328,15 @@ export function createApi(getToken: () => Promise<string | null>) {
       }>("/accounts/cambio", { method: "POST", body: { operacion, monto } }),
 
     // --------------------------------------------------- Transferencias
-    transferir: (destinatario: string, amount: number, reason?: string) =>
+    transferir: (
+      destinatario: string,
+      amount: number,
+      reason?: string,
+      moneda: Moneda = "ARS",
+    ) =>
       request<unknown>("/transactions/transfer", {
         method: "POST",
-        body: { destinatario, amount, reason },
+        body: { destinatario, amount, reason, moneda },
       }),
     historial: () => request<MovimientoRed[]>("/transactions/history"),
 

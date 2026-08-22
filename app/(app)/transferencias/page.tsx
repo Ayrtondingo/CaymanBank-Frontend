@@ -12,12 +12,13 @@ import {
   Input,
   Skeleton,
 } from "../../components/ui";
-import type { MovimientoRed } from "@/lib/api";
+import type { Moneda, MovimientoRed } from "@/lib/api";
 import { cbuCorto, esCbu, fechaHora, money } from "@/lib/format";
 
 export default function TransferenciasPage() {
   const { api, perfil, refrescar, avisar, cargando } = useBank();
 
+  const [moneda, setMoneda] = useState<Moneda>("ARS");
   const [destinatario, setDestinatario] = useState("");
   const [monto, setMonto] = useState("");
   const [motivo, setMotivo] = useState("");
@@ -26,9 +27,11 @@ export default function TransferenciasPage() {
 
   const [historial, setHistorial] = useState<MovimientoRed[] | null>(null);
 
-  const principal = perfil?.accounts.find((cuenta) => cuenta.currency === "ARS");
-  const saldo = Number(principal?.balance ?? 0);
-  const puedeOperar = Boolean(principal?.cbu);
+  const cuentas = perfil?.accounts ?? [];
+  const cuentaOrigen = cuentas.find((cuenta) => cuenta.currency === moneda);
+  const saldo = Number(cuentaOrigen?.balance ?? 0);
+  const puedeOperar = Boolean(cuentaOrigen?.cbu);
+  const tieneUsd = cuentas.some((cuenta) => cuenta.currency === "USD");
 
   async function cargarHistorial() {
     try {
@@ -60,18 +63,18 @@ export default function TransferenciasPage() {
       return;
     }
     if (valor > saldo) {
-      setError(`No te alcanza el saldo. Disponible: ${money(saldo)}.`);
+      setError(`No te alcanza el saldo. Disponible: ${money(saldo, moneda)}.`);
       return;
     }
-    if (destino === principal?.cbu) {
+    if (destino === cuentaOrigen?.cbu) {
       setError("No podés transferirte a tu propia cuenta.");
       return;
     }
 
     setEnviando(true);
     try {
-      await api.transferir(destino, valor, motivo.trim() || undefined);
-      avisar("exito", `Transferiste ${money(valor)} correctamente.`);
+      await api.transferir(destino, valor, motivo.trim() || undefined, moneda);
+      avisar("exito", `Transferiste ${money(valor, moneda)} correctamente.`);
       setDestinatario("");
       setMonto("");
       setMotivo("");
@@ -115,10 +118,42 @@ export default function TransferenciasPage() {
         <Card className="lg:col-span-2">
           <CardHeader titulo="Nueva transferencia" />
           <form onSubmit={enviar} className="space-y-4 p-5">
+            {tieneUsd && (
+              <div className="grid grid-cols-2 gap-2 rounded-lg bg-ink-100 p-1">
+                {(["ARS", "USD"] as const).map((opcion) => (
+                  <button
+                    key={opcion}
+                    type="button"
+                    onClick={() => setMoneda(opcion)}
+                    className={[
+                      "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+                      moneda === opcion
+                        ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                        : "text-ink-600 hover:text-ink-800",
+                    ].join(" ")}
+                  >
+                    {opcion === "ARS" ? "Pesos" : "Dólares"}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="rounded-lg bg-ink-50 px-4 py-3">
-              <p className="text-xs text-ink-500">Disponible en pesos</p>
-              <p className="tabular mt-0.5 text-xl font-semibold text-ink-900">{money(saldo)}</p>
+              <p className="text-xs text-ink-500">
+                Disponible en {moneda === "ARS" ? "pesos" : "dólares"}
+              </p>
+              <p className="tabular mt-0.5 text-xl font-semibold text-ink-900">
+                {money(saldo, moneda)}
+              </p>
             </div>
+
+            {/* El Banco Central no valida que las monedas coincidan, asi que
+                conviene avisarlo antes de que el backend rechace. */}
+            <Aviso tono="neutro">
+              El destino tiene que ser una cuenta en{" "}
+              <strong>{moneda === "ARS" ? "pesos" : "dólares"}</strong>. Para cambiar de
+              moneda, usá Cuentas.
+            </Aviso>
 
             <Campo
               etiqueta="Destino"
