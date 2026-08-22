@@ -17,6 +17,7 @@ import {
   Tabla,
 } from "../../components/ui";
 import type { Moneda, UsuarioAdmin } from "@/lib/api";
+import { SolicitudesPrestamo } from "./solicitudes";
 import { cbuCorto, inicialesDe, money } from "@/lib/format";
 
 const ROLES = [
@@ -102,6 +103,8 @@ export default function AdministracionPage() {
           </p>
         </Card>
       </div>
+
+      <SolicitudesPrestamo esGerente={esGerente} />
 
       <Card>
         <CardHeader

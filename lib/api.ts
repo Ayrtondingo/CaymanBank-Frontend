@@ -96,13 +96,38 @@ export interface CuotaPrestamo {
   pagadaEl: string | null;
 }
 
+export interface InformeCentral {
+  situacion: number;
+  deudas: { entidad: string; monto: number; situacion: number }[];
+}
+
+export interface SolicitudPrestamo {
+  id: number;
+  monto: number;
+  plazoMeses: number;
+  tna: number;
+  cuota: number;
+  fechaSolicitud: string;
+  motivoRevision: string | null;
+  informeCentral: InformeCentral | null;
+  cliente: {
+    id: string;
+    nombre: string;
+    email: string;
+    dni: string | null;
+  };
+}
+
 export interface Prestamo {
   id: number;
   monto: number;
   plazoMeses: number;
   tna: number;
   cuota: number;
-  estado: "vigente" | "cancelado";
+  estado: "pendiente" | "vigente" | "cancelado" | "rechazado";
+  motivoRevision?: string | null;
+  motivoRechazo?: string | null;
+  resueltoPor?: string | null;
   cbu: string;
   fechaAlta: string;
   cuotasPagadas: number;
@@ -388,6 +413,15 @@ export function createApi(getToken: () => Promise<string | null>) {
     pagarCuota: (id: number) => request<unknown>(`/prestamos/${id}/pagos`, { method: "POST" }),
     precancelar: (id: number) =>
       request<unknown>(`/prestamos/${id}/precancelacion`, { method: "POST" }),
+    solicitudesPendientes: () =>
+      request<SolicitudPrestamo[]>("/prestamos/solicitudes/pendientes"),
+    aprobarSolicitud: (id: number) =>
+      request<unknown>(`/prestamos/solicitudes/${id}/aprobar`, { method: "POST" }),
+    rechazarSolicitud: (id: number, motivo?: string) =>
+      request<unknown>(`/prestamos/solicitudes/${id}/rechazar`, {
+        method: "POST",
+        body: { motivo },
+      }),
 
     // ------------------------------------------------------- Inversiones
     plazosFijos: () => request<PlazoFijo[]>("/plazos-fijos"),
