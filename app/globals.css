@@ -1,192 +1,165 @@
 @import "tailwindcss";
 @source "./**/*.{js,ts,jsx,tsx,mdx}";
 
-:root {
-  --green: #00ff41;
-  --green-dim: #00cc33;
-  --green-dark: #003300;
-  --green-glow: rgba(0, 255, 65, 0.15);
-  --red: #ff3333;
-  --border: #0a2a0a;
-  --bg: #000000;
+/* ============================================================================
+   Cayman Bank — sistema de diseño
+   Identidad propia, con el registro visual de un banco minorista: fondo claro,
+   azul institucional, superficies blancas con bordes suaves y un acento verde
+   agua que se usa solo para lo accionable.
+   ========================================================================= */
+
+@theme {
+  /* Azul institucional */
+  --color-brand-50: #eef4fb;
+  --color-brand-100: #d6e4f4;
+  --color-brand-200: #b0c9e8;
+  --color-brand-300: #7ea6d8;
+  --color-brand-400: #4a7fc4;
+  --color-brand-500: #2b5f9e;
+  --color-brand-600: #1d4a80;
+  --color-brand-700: #163a66;
+  --color-brand-800: #102b4c;
+  --color-brand-900: #0a2540;
+  --color-brand-950: #061829;
+
+  /* Acento verde agua — Caribe. Solo para lo accionable. */
+  --color-accent-50: #e6f7f6;
+  --color-accent-100: #c2ecea;
+  --color-accent-300: #6fd0cb;
+  --color-accent-500: #00a6a0;
+  --color-accent-600: #008a85;
+  --color-accent-700: #006f6b;
+
+  /* Semánticos */
+  --color-positive-50: #e9f7ef;
+  --color-positive-500: #1a9b58;
+  --color-positive-700: #12703f;
+  --color-negative-50: #fdecec;
+  --color-negative-500: #d64545;
+  --color-negative-700: #a12f2f;
+  --color-warning-50: #fff6e5;
+  --color-warning-500: #d98b0a;
+  --color-warning-700: #9c6206;
+
+  /* Neutros */
+  --color-ink-50: #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dfe3ea;
+  --color-ink-300: #c4cad6;
+  --color-ink-400: #929bab;
+  --color-ink-500: #6b7484;
+  --color-ink-600: #4d5563;
+  --color-ink-700: #363d49;
+  --color-ink-800: #232932;
+  --color-ink-900: #12161c;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --radius-card: 0.875rem;
+
+  --shadow-card: 0 1px 2px rgba(10, 37, 64, 0.04), 0 1px 3px rgba(10, 37, 64, 0.06);
+  --shadow-raised: 0 4px 12px rgba(10, 37, 64, 0.08), 0 1px 3px rgba(10, 37, 64, 0.06);
+  --shadow-overlay: 0 16px 48px rgba(10, 37, 64, 0.18);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: #000;
-  color: var(--green);
-  font-family: 'Courier New', Courier, monospace;
   min-height: 100%;
 }
 
-/* Scanline overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.08) 2px,
-    rgba(0, 0, 0, 0.08) 4px
-  );
+body {
+  background: var(--color-ink-50);
+  color: var(--color-ink-800);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Green glow text utility */
-.glow {
-  text-shadow: 0 0 8px var(--green), 0 0 20px rgba(0,255,65,0.4);
+/* Los importes van tabulares: en una columna de saldos las cifras tienen que
+   alinearse por dígito, si no la tabla se lee torcida. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
-/* Terminal button base */
-.btn-terminal {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid var(--green);
+/* ------------------------------------------------------------------ Scrollbar */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
   background: transparent;
-  color: var(--green);
-  font-family: inherit;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  padding: 0.6rem 1.2rem;
-  cursor: pointer;
-  transition: background 120ms, color 120ms, box-shadow 120ms;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-300);
+  border-radius: 999px;
+  border: 2px solid var(--color-ink-50);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-400);
+}
+
+/* ------------------------------------------------------- Foco accesible único */
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- Animaciones */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.24s ease-out both;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Placeholder de carga: una barra gris con un brillo que la recorre. */
+.skeleton {
   position: relative;
+  overflow: hidden;
+  background: var(--color-ink-100);
+  border-radius: 6px;
 }
-
-.btn-terminal:hover:not(:disabled) {
-  background: var(--green);
-  color: #000;
-  box-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow);
-}
-
-.btn-terminal:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.btn-terminal::before {
-  content: '';
+.skeleton::after {
+  content: "";
   position: absolute;
-  top: -3px; left: -3px;
-  width: 6px; height: 6px;
-  border-top: 1px solid var(--green);
-  border-left: 1px solid var(--green);
-}
-
-.btn-terminal::after {
-  content: '';
-  position: absolute;
-  bottom: -3px; right: -3px;
-  width: 6px; height: 6px;
-  border-bottom: 1px solid var(--green);
-  border-right: 1px solid var(--green);
-}
-
-/* Danger button */
-.btn-danger {
-  border-color: var(--red);
-  color: var(--red);
-}
-.btn-danger:hover:not(:disabled) {
-  background: var(--red);
-  color: #000;
-  box-shadow: 0 0 20px rgba(255,51,51,0.2);
-}
-.btn-danger::before, .btn-danger::after {
-  border-color: var(--red);
-}
-
-/* Terminal input */
-.input-terminal {
-  width: 100%;
-  background: #000;
-  border: 1px solid #003300;
-  color: var(--green);
-  font-family: inherit;
-  font-size: 0.85rem;
-  padding: 0.75rem 1rem;
-  outline: none;
-  transition: border-color 120ms, box-shadow 120ms;
-}
-
-.input-terminal::placeholder {
-  color: #004400;
-}
-
-.input-terminal:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 12px var(--green-glow);
-}
-
-/* Terminal panel */
-.panel {
-  background: #000;
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-}
-
-.panel-active {
-  border-color: var(--green);
-  box-shadow: 0 0 20px var(--green-glow);
-}
-
-/* Nav item */
-.nav-item {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
-  color: #005500;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 120ms, background 120ms, border-color 120ms;
-  border-left: 2px solid transparent;
-  background: transparent;
-  font-family: inherit;
-}
-
-.nav-item:hover {
-  color: var(--green);
-  border-left-color: #003300;
-}
-
-.nav-item-active {
-  color: var(--green);
-  border-left-color: var(--green);
-  background: rgba(0,255,65,0.04);
-  text-shadow: 0 0 8px rgba(0,255,65,0.4);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #003300; }
-::-webkit-scrollbar-thumb:hover { background: var(--green); }
-
-/* Clerk override for dark theme */
-.cl-rootBox, .cl-card {
-  background: #000 !important;
-  border: 1px solid var(--border) !important;
-  color: var(--green) !important;
-  font-family: 'Courier New', monospace !important;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  .animate-fade-up,
+  .skeleton::after {
+    animation: none;
   }
 }

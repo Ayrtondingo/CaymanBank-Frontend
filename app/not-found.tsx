@@ -2,20 +2,20 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center gap-4 bg-black px-4 text-center font-mono">
-      <p className="text-[9px] font-black uppercase tracking-[0.5em] text-[#003300]">ERR_404</p>
-      <h1 className="text-3xl font-black uppercase tracking-tight text-[#00ff41]" style={{ textShadow: '0 0 20px rgba(0,255,65,0.4)' }}>
-        ROUTE_NOT_FOUND
-      </h1>
-      <p className="text-[10px] text-[#004400] uppercase tracking-widest">
-        El nodo solicitado no existe en esta red.
-      </p>
-      <Link
-        href="/dashboard"
-        className="btn-terminal mt-4 text-[10px]"
-      >
-        RETURN_TO_BASE
-      </Link>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-[var(--radius-card)] border border-ink-200 bg-white p-8 text-center shadow-[var(--shadow-card)]">
+        <p className="text-3xl font-semibold text-brand-900">404</p>
+        <h1 className="mt-2 text-lg font-semibold text-ink-900">Página no encontrada</h1>
+        <p className="mt-2 text-sm text-ink-500">
+          La dirección que buscás no existe o cambió de lugar.
+        </p>
+        <Link
+          href="/inicio"
+          className="mt-6 inline-block rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800"
+        >
+          Ir al inicio
+        </Link>
+      </div>
     </div>
   );
 }
