@@ -14,7 +14,7 @@ const VARIANTES: Record<Variante, string> = {
   primario:
     "bg-brand-900 text-white hover:bg-brand-800 active:bg-brand-950 disabled:bg-ink-300",
   secundario:
-    "bg-white text-brand-900 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 disabled:text-ink-400",
+    "bg-surface text-ink-900 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 disabled:text-ink-400",
   fantasma:
     "bg-transparent text-brand-700 hover:bg-brand-50 disabled:text-ink-400",
   peligro:
@@ -65,7 +65,7 @@ export function Card({
   return (
     <section
       className={cx(
-        "rounded-[var(--radius-card)] border border-ink-200 bg-white shadow-[var(--shadow-card)]",
+        "rounded-[var(--radius-card)] border border-ink-200 bg-surface shadow-[var(--shadow-card)]",
         className,
       )}
     >
@@ -121,7 +121,7 @@ export function Campo({
 }
 
 const CONTROL =
-  "w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900 " +
+  "w-full rounded-lg border border-ink-200 bg-surface px-3 py-2.5 text-sm text-ink-900 " +
   "placeholder:text-ink-400 focus:border-accent-500 disabled:bg-ink-50 disabled:text-ink-400";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
@@ -274,7 +274,7 @@ export function Modal({
         aria-label={titulo}
         onClick={(event) => event.stopPropagation()}
         className={cx(
-          "animate-fade-up w-full rounded-t-2xl bg-white shadow-[var(--shadow-overlay)] sm:rounded-2xl",
+          "animate-fade-up w-full rounded-t-2xl bg-surface shadow-[var(--shadow-overlay)] sm:rounded-2xl",
           ancho,
         )}
       >

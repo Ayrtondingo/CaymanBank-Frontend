@@ -45,7 +45,7 @@ export default function InversionesPage() {
             className={[
               "flex-1 rounded-md px-5 py-2 text-sm font-semibold transition-colors sm:flex-none",
               solapa === valor
-                ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                ? "bg-surface text-ink-900 shadow-[var(--shadow-card)]"
                 : "text-ink-600 hover:text-ink-800",
             ].join(" ")}
           >
@@ -412,7 +412,7 @@ function ModalOrden({
               className={[
                 "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                 tipo === opcion
-                  ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                  ? "bg-surface text-ink-900 shadow-[var(--shadow-card)]"
                   : "text-ink-600 hover:text-ink-800",
               ].join(" ")}
             >

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Logo } from "./Logo";
 import { cx } from "./ui";
+import { TemaToggle } from "./TemaToggle";
 
 interface ItemNav {
   href: string;
@@ -159,7 +160,7 @@ export function Shell({ children, rol }: { children: ReactNode; rol?: string }) 
       )}
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-ink-200 bg-white/90 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-ink-200 bg-surface/90 px-4 backdrop-blur sm:px-6">
           <button
             onClick={() => setMenuAbierto(true)}
             aria-label="Abrir menú"
@@ -175,6 +176,7 @@ export function Shell({ children, rol }: { children: ReactNode; rol?: string }) 
           </div>
 
           <div className="ml-auto flex items-center gap-3">
+            <TemaToggle />
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium text-ink-900">{user?.fullName ?? "Cliente"}</p>
               <p className="text-xs text-ink-500">

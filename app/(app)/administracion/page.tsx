@@ -16,7 +16,7 @@ import {
   Skeleton,
   Tabla,
 } from "../../components/ui";
-import type { UsuarioAdmin } from "@/lib/api";
+import type { Moneda, UsuarioAdmin } from "@/lib/api";
 import { cbuCorto, inicialesDe, money } from "@/lib/format";
 
 const ROLES = [
@@ -78,7 +78,9 @@ export default function AdministracionPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Administración</h1>
         <p className="mt-1 text-sm text-ink-500">
           Gestión de clientes del banco.{" "}
-          {esGerente ? "Perfil gerente: podés cambiar roles." : "Perfil empleado."}
+          {esGerente
+            ? "Perfil gerente: podés cambiar roles y ajustar saldos."
+            : "Perfil empleado: solo consulta y activación de clientes."}
         </p>
       </header>
 
@@ -171,9 +173,11 @@ export default function AdministracionPage() {
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-2">
-                    <Boton variante="secundario" onClick={() => setAjustando(usuario)}>
-                      Saldo
-                    </Boton>
+                    {esGerente && (
+                      <Boton variante="secundario" onClick={() => setAjustando(usuario)}>
+                        Saldo
+                      </Boton>
+                    )}
                     {esGerente && !usuario.cbu && (
                       <Boton onClick={() => setActivando(usuario)}>Activar</Boton>
                     )}
@@ -215,8 +219,10 @@ function ModalSaldo({
   onCerrar: () => void;
   onHecho: () => void;
 }) {
-  const { api, avisar } = useBank();
+  const { api, refrescar, avisar } = useBank();
   const [monto, setMonto] = useState("");
+  const [moneda, setMoneda] = useState<Moneda>("ARS");
+  const [motivo, setMotivo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,9 +239,12 @@ function ModalSaldo({
 
     setEnviando(true);
     try {
-      await api.ajustarSaldo(usuario.id, valor);
-      avisar("exito", `Saldo ajustado en ${money(valor)}.`);
+      const r = await api.ajustarSaldo(usuario.id, valor, moneda, motivo.trim() || undefined);
+      avisar("exito", `${r.cliente}: ${money(r.saldoPrevio, moneda)} → ${money(r.balance, moneda)}`);
       setMonto("");
+      setMotivo("");
+      // El gerente puede ajustarse a si mismo: hay que refrescar su propio saldo.
+      await refrescar();
       onHecho();
     } catch (e) {
       setError((e as Error).message);
@@ -252,9 +261,16 @@ function ModalSaldo({
       descripcion={usuario ? `${usuario.fullName} · ${money(usuario.balance)}` : ""}
     >
       <form onSubmit={enviar} className="space-y-4">
+        <Campo etiqueta="Moneda">
+          <Select value={moneda} onChange={(e) => setMoneda(e.target.value as Moneda)}>
+            <option value="ARS">Pesos</option>
+            <option value="USD">Dólares</option>
+          </Select>
+        </Campo>
+
         <Campo
           etiqueta="Importe del ajuste"
-          ayuda="Positivo acredita, negativo debita. Se aplica a la caja en pesos."
+          ayuda="Positivo acredita, negativo debita."
         >
           <Input
             autoFocus
@@ -262,6 +278,15 @@ function ModalSaldo({
             value={monto}
             onChange={(e) => setMonto(e.target.value)}
             placeholder="10000 o -5000"
+          />
+        </Campo>
+
+        <Campo etiqueta="Motivo (opcional)" ayuda="Queda registrado en el movimiento.">
+          <Input
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Corrección por error de carga"
+            maxLength={80}
           />
         </Campo>
 

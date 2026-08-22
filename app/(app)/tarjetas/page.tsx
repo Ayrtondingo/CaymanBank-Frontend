@@ -16,6 +16,7 @@ import {
   Tabla,
 } from "../../components/ui";
 import type { ResumenTarjeta, Tarjeta } from "@/lib/api";
+import { ModalDatos, ModalPagar } from "./modales";
 import { fecha, money, percent } from "@/lib/format";
 
 export default function TarjetasPage() {
@@ -24,6 +25,8 @@ export default function TarjetasPage() {
   const [tarjetas, setTarjetas] = useState<Tarjeta[] | null>(null);
   const [emitiendo, setEmitiendo] = useState(false);
   const [resumenDe, setResumenDe] = useState<Tarjeta | null>(null);
+  const [datosDe, setDatosDe] = useState<Tarjeta | null>(null);
+  const [pagarCon, setPagarCon] = useState<Tarjeta | null>(null);
 
   const cargar = useCallback(async () => {
     try {
@@ -84,6 +87,8 @@ export default function TarjetasPage() {
               titular={perfil?.fullName ?? ""}
               onBloquear={() => void alternarBloqueo(tarjeta)}
               onResumen={() => setResumenDe(tarjeta)}
+              onVerDatos={() => setDatosDe(tarjeta)}
+              onPagar={() => setPagarCon(tarjeta)}
             />
           ))}
         </div>
@@ -99,6 +104,17 @@ export default function TarjetasPage() {
       />
 
       <ModalResumen tarjeta={resumenDe} onCerrar={() => setResumenDe(null)} />
+
+      <ModalDatos tarjeta={datosDe} onCerrar={() => setDatosDe(null)} />
+
+      <ModalPagar
+        tarjeta={pagarCon}
+        onCerrar={() => setPagarCon(null)}
+        onHecho={async () => {
+          setPagarCon(null);
+          await cargar();
+        }}
+      />
     </div>
   );
 }
@@ -108,11 +124,15 @@ function PlasticoTarjeta({
   titular,
   onBloquear,
   onResumen,
+  onVerDatos,
+  onPagar,
 }: {
   tarjeta: Tarjeta;
   titular: string;
   onBloquear: () => void;
   onResumen: () => void;
+  onVerDatos: () => void;
+  onPagar: () => void;
 }) {
   const bloqueada = tarjeta.estado === "bloqueada";
   const credito = tarjeta.tipo === "credito";
@@ -197,9 +217,15 @@ function PlasticoTarjeta({
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2 pt-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <EstadoBadge estado={tarjeta.estado} />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Boton variante="secundario" onClick={onVerDatos}>
+              Ver datos
+            </Boton>
+            <Boton variante="secundario" onClick={onPagar} disabled={bloqueada}>
+              Pagar
+            </Boton>
             {credito && (
               <Boton variante="secundario" onClick={onResumen}>
                 Resumen
@@ -270,7 +296,7 @@ function ModalEmitir({
               className={[
                 "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                 tipo === opcion
-                  ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                  ? "bg-surface text-ink-900 shadow-[var(--shadow-card)]"
                   : "text-ink-600 hover:text-ink-800",
               ].join(" ")}
             >

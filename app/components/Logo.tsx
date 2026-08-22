@@ -1,3 +1,12 @@
+import Image from "next/image";
+
+const ARCHIVO = "/images/cayman-shadow-bank-logo.jpg";
+
+/**
+ * El archivo del logo es un JPEG con el fondo blanco quemado, sin canal alfa.
+ * Sobre fondos oscuros se recorta al isotipo (el yacaré en el escudo) y se lo
+ * apoya en una pastilla blanca, para que no aparezca un rectángulo blanco.
+ */
 export function Logo({
   className = "",
   invertido = false,
@@ -5,35 +14,54 @@ export function Logo({
   className?: string;
   invertido?: boolean;
 }) {
-  const marca = invertido ? "text-white" : "text-brand-900";
-  const acento = invertido ? "text-accent-300" : "text-accent-500";
-
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <svg viewBox="0 0 32 32" className="size-8 shrink-0" aria-hidden>
-        <rect
-          width="32"
-          height="32"
-          rx="8"
-          className={invertido ? "fill-white/10" : "fill-brand-900"}
-        />
-        {/* Frontón: tres columnas bajo un techo, la silueta clásica de un banco. */}
-        <path d="M8 13h16v1.6H8z" className="fill-accent-500" />
-        <path d="M16 6.5 25 12H7z" className="fill-white" />
-        <path
-          d="M10.5 16h2.2v6h-2.2zM14.9 16h2.2v6h-2.2zM19.3 16h2.2v6h-2.2z"
-          className="fill-white"
-        />
-        <path d="M8 23.5h16V25H8z" className="fill-accent-500" />
-      </svg>
-      <span className="leading-tight">
-        <span className={`block text-[15px] font-bold tracking-tight ${marca}`}>
-          Cayman
+      <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-white">
+        {/* El isotipo ocupa el tercio superior del archivo: se escala y se
+            desplaza para mostrar solo esa parte. */}
+        <span className="relative size-9 overflow-hidden">
+          <Image
+            src={ARCHIVO}
+            alt=""
+            aria-hidden
+            width={1536}
+            height={1024}
+            priority
+            className="absolute top-1/2 left-1/2 max-w-none -translate-x-1/2 -translate-y-[62%] scale-[1.75]"
+          />
         </span>
-        <span className={`block text-[10px] font-semibold tracking-[0.18em] uppercase ${acento}`}>
+      </span>
+
+      <span className="leading-tight">
+        <span
+          className={`block text-[15px] font-bold tracking-tight ${
+            invertido ? "text-white" : "text-ink-900"
+          }`}
+        >
+          Cayman Shadow
+        </span>
+        <span
+          className={`block text-[10px] font-semibold tracking-[0.18em] uppercase ${
+            invertido ? "text-accent-300" : "text-accent-600"
+          }`}
+        >
           Bank
         </span>
       </span>
     </span>
+  );
+}
+
+/** Logo completo, con el lockup original. Para pantallas de login y el footer. */
+export function LogoCompleto({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src={ARCHIVO}
+      alt="Cayman Shadow Bank"
+      width={1536}
+      height={1024}
+      priority
+      className={`h-auto w-full rounded-xl ${className}`}
+    />
   );
 }

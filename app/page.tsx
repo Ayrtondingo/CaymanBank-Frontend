@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Logo } from "./components/Logo";
+import { TemaToggle } from "./components/TemaToggle";
 import {
   BotonesEntrada,
   ICONOS,
@@ -162,9 +163,9 @@ export default async function LandingPage() {
   const cotizaciones = await getCotizaciones();
 
   return (
-    <div className="bg-white">
+    <div className="bg-surface">
       {/* ─────────────────────────────────────────────────────────── Header */}
-      <header className="sticky top-0 z-30 border-b border-ink-200 bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-ink-200 bg-surface/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo />
 
@@ -178,7 +179,7 @@ export default async function LandingPage() {
               <a
                 key={href}
                 href={href}
-                className="text-sm font-medium text-ink-600 transition-colors hover:text-brand-900"
+                className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
               >
                 {texto}
               </a>
@@ -186,10 +187,11 @@ export default async function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <TemaToggle />
             <SignedOut>
               <Link
                 href="/sign-in"
-                className="hidden rounded-lg px-4 py-2 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50 sm:block"
+                className="hidden rounded-lg px-4 py-2 text-sm font-semibold text-ink-900 transition-colors hover:bg-ink-100 sm:block"
               >
                 Ingresar
               </Link>
@@ -257,7 +259,7 @@ export default async function LandingPage() {
 
           {/* Mock del resumen de cuenta */}
           <div className="lg:justify-self-end">
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-[var(--shadow-overlay)]">
+            <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-[var(--shadow-overlay)]">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs font-medium tracking-wide text-ink-500 uppercase">
@@ -481,7 +483,7 @@ export default async function LandingPage() {
               <ul className="mt-4 space-y-2 text-sm text-ink-500">
                 {["Cuentas", "Tarjetas", "Préstamos", "Inversiones", "Seguros"].map((p) => (
                   <li key={p}>
-                    <a href="#productos" className="transition-colors hover:text-brand-900">
+                    <a href="#productos" className="transition-colors hover:text-ink-900">
                       {p}
                     </a>
                   </li>
@@ -495,17 +497,17 @@ export default async function LandingPage() {
               </h3>
               <ul className="mt-4 space-y-2 text-sm text-ink-500">
                 <li>
-                  <a href="#seguridad" className="transition-colors hover:text-brand-900">
+                  <a href="#seguridad" className="transition-colors hover:text-ink-900">
                     Seguridad
                   </a>
                 </li>
                 <li>
-                  <a href="#preguntas" className="transition-colors hover:text-brand-900">
+                  <a href="#preguntas" className="transition-colors hover:text-ink-900">
                     Preguntas frecuentes
                   </a>
                 </li>
                 <li>
-                  <a href="#como-empezar" className="transition-colors hover:text-brand-900">
+                  <a href="#como-empezar" className="transition-colors hover:text-ink-900">
                     Cómo empezar
                   </a>
                 </li>

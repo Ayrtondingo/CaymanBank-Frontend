@@ -2,14 +2,13 @@
 @source "./**/*.{js,ts,jsx,tsx,mdx}";
 
 /* ============================================================================
-   Cayman Bank — sistema de diseño
-   Identidad propia, con el registro visual de un banco minorista: fondo claro,
-   azul institucional, superficies blancas con bordes suaves y un acento verde
-   agua que se usa solo para lo accionable.
+   Cayman Shadow Bank — sistema de diseño
+   Azul institucional + verde agua, tomados del logo. Fondo claro por defecto,
+   con tema oscuro completo.
    ========================================================================= */
 
 @theme {
-  /* Azul institucional */
+  /* Azul institucional (el azul del escudo del logo) */
   --color-brand-50: #eef4fb;
   --color-brand-100: #d6e4f4;
   --color-brand-200: #b0c9e8;
@@ -22,13 +21,13 @@
   --color-brand-900: #0a2540;
   --color-brand-950: #061829;
 
-  /* Acento verde agua — Caribe. Solo para lo accionable. */
-  --color-accent-50: #e6f7f6;
-  --color-accent-100: #c2ecea;
-  --color-accent-300: #6fd0cb;
-  --color-accent-500: #00a6a0;
-  --color-accent-600: #008a85;
-  --color-accent-700: #006f6b;
+  /* Verde del logo. Solo para lo accionable. */
+  --color-accent-50: #e9f7ed;
+  --color-accent-100: #c9ecd3;
+  --color-accent-300: #6fd08a;
+  --color-accent-500: #23a455;
+  --color-accent-600: #1b8544;
+  --color-accent-700: #146b36;
 
   /* Semánticos */
   --color-positive-50: #e9f7ef;
@@ -41,7 +40,7 @@
   --color-warning-500: #d98b0a;
   --color-warning-700: #9c6206;
 
-  /* Neutros */
+  /* Neutros: 50 es el fondo, 900 el texto. En oscuro se invierten. */
   --color-ink-50: #f7f8fa;
   --color-ink-100: #eef0f4;
   --color-ink-200: #dfe3ea;
@@ -53,13 +52,62 @@
   --color-ink-800: #232932;
   --color-ink-900: #12161c;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Superficie de tarjetas y modales. Reemplaza a `bg-white`, que no se
+     puede invertir: es el único color que cambia de "blanco" a "casi negro". */
+  --color-surface: #ffffff;
 
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --radius-card: 0.875rem;
 
   --shadow-card: 0 1px 2px rgba(10, 37, 64, 0.04), 0 1px 3px rgba(10, 37, 64, 0.06);
   --shadow-raised: 0 4px 12px rgba(10, 37, 64, 0.08), 0 1px 3px rgba(10, 37, 64, 0.06);
   --shadow-overlay: 0 16px 48px rgba(10, 37, 64, 0.18);
+}
+
+/* ---------------------------------------------------------------- Oscuro ---
+   Se invierte la escala de neutros en lugar de reescribir cada componente:
+   `text-ink-900` sigue siendo "el texto más fuerte" y `bg-ink-50` "el fondo",
+   solo que ahora apuntan a otros valores. Los semánticos se aclaran para que
+   sigan teniendo contraste sobre fondo oscuro.
+   -------------------------------------------------------------------------- */
+
+[data-theme="dark"] {
+  --color-ink-50: #12161c;
+  --color-ink-100: #1b212a;
+  --color-ink-200: #262e39;
+  --color-ink-300: #3a4453;
+  --color-ink-400: #6b7484;
+  --color-ink-500: #9aa3b2;
+  --color-ink-600: #b8c0cc;
+  --color-ink-700: #d3d9e2;
+  --color-ink-800: #e8ecf1;
+  --color-ink-900: #f7f8fa;
+
+  --color-surface: #171c24;
+
+  /* El azul de marca sube de tono: sobre fondo oscuro, brand-900 desaparecía. */
+  --color-brand-50: #16202e;
+  --color-brand-100: #b0c9e8;
+  --color-brand-200: #7ea6d8;
+  --color-brand-300: #5b8ac4;
+  --color-brand-900: #0d1b2c;
+  --color-brand-950: #080f18;
+
+  --color-accent-50: #10261a;
+  --color-accent-600: #3fbe70;
+  --color-accent-700: #6fd08a;
+
+  --color-positive-50: #10261a;
+  --color-positive-700: #5fce8c;
+  --color-negative-50: #2a1618;
+  --color-negative-700: #f08a8a;
+  --color-warning-50: #2a2110;
+  --color-warning-700: #e8b95c;
+
+  /* Sombras casi imperceptibles: en oscuro la profundidad la da el borde. */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -78,6 +126,15 @@ body {
   color: var(--color-ink-800);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* El cambio de tema no debe animar cada color de la página: solo el fondo y
+   el texto, que es lo que se percibe. Sin esto el toggle "chorrea". */
+body,
+body * {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
 }
 
 /* Los importes van tabulares: en una columna de saldos las cifras tienen que
@@ -148,18 +205,21 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.7),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
   animation: shimmer 1.4s infinite;
+}
+
+[data-theme="dark"] .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .skeleton::after {
     animation: none;
+  }
+  body,
+  body * {
+    transition: none;
   }
 }

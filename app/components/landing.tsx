@@ -100,7 +100,7 @@ export function BotonesEntrada({ invertido = false }: { invertido?: boolean }) {
           href="/sign-up"
           className={
             invertido
-              ? "rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+              ? "rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand-900 transition-colors hover:bg-ink-100"
               : "rounded-lg bg-brand-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
           }
         >
@@ -122,7 +122,7 @@ export function BotonesEntrada({ invertido = false }: { invertido?: boolean }) {
           href="/inicio"
           className={
             invertido
-              ? "rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+              ? "rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand-900 transition-colors hover:bg-ink-100"
               : "rounded-lg bg-brand-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
           }
         >

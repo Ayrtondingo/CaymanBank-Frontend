@@ -128,7 +128,7 @@ export default function TransferenciasPage() {
                     className={[
                       "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                       moneda === opcion
-                        ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                        ? "bg-surface text-ink-900 shadow-[var(--shadow-card)]"
                         : "text-ink-600 hover:text-ink-800",
                     ].join(" ")}
                   >

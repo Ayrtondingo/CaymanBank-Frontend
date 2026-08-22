@@ -57,6 +57,16 @@ export interface Tarjeta {
   vencimiento: string;
 }
 
+export interface DatosTarjeta {
+  id: number;
+  tipo: "debito" | "credito";
+  numero: string;
+  numeroPlano: string;
+  cvv: string;
+  vencimiento: string;
+  estado: string;
+}
+
 export interface ResumenTarjeta {
   periodo: string;
   vencimiento: string;
@@ -169,6 +179,25 @@ export interface EmpresaServicio {
   id: number;
   nombre: string;
   rubro: string;
+}
+
+export interface ServicioAdherido {
+  id: number;
+  empresaId: number;
+  empresa: string;
+  rubro: string;
+  numeroCliente: string;
+  apodo: string | null;
+  totalAdeudado: number;
+  cantidadFacturas: number;
+  tieneVencidas: boolean;
+  facturas: {
+    id: number;
+    importe: number;
+    vencimiento: string;
+    estado: string;
+    vencida: boolean;
+  }[];
 }
 
 export interface DeudaServicio {
@@ -347,6 +376,7 @@ export function createApi(getToken: () => Promise<string | null>) {
     bloquearTarjeta: (id: number, accion: "bloquear" | "desbloquear") =>
       request<Tarjeta>(`/tarjetas/${id}/bloqueo`, { method: "POST", body: { accion } }),
     resumenTarjeta: (id: number) => request<ResumenTarjeta>(`/tarjetas/${id}/resumen`),
+    datosTarjeta: (id: number) => request<DatosTarjeta>(`/tarjetas/${id}/datos`),
     autorizarConsumo: (id: number, body: { comercio: string; monto: number; cuotas?: number }) =>
       request<{ id: number; estado: string; motivo: string | null }>(
         `/tarjetas/${id}/autorizaciones`,
@@ -385,6 +415,11 @@ export function createApi(getToken: () => Promise<string | null>) {
       request<DeudaServicio>(`/servicios/empresas/${id}/deuda`, { query: { numeroCliente } }),
     pagarServicio: (id: number, body: { numeroCliente: string; importe: number }) =>
       request<unknown>(`/servicios/empresas/${id}/pagos`, { method: "POST", body }),
+    serviciosAdheridos: () => request<ServicioAdherido[]>("/servicios/adheridos"),
+    adherirServicio: (id: number, body: { numeroCliente: string; apodo?: string }) =>
+      request<unknown>(`/servicios/empresas/${id}/adherir`, { method: "POST", body }),
+    quitarAdhesion: (id: number) =>
+      request<unknown>(`/servicios/adheridos/${id}`, { method: "DELETE" }),
 
     // ----------------------------------------------------------- Recargas
     operadoras: () => request<{ id: string; nombre: string }[]>("/recargas/operadoras"),
@@ -434,8 +469,16 @@ export function createApi(getToken: () => Promise<string | null>) {
 
     // -------------------------------------------------------------- Admin
     usuarios: () => request<UsuarioAdmin[]>("/admin/users"),
-    ajustarSaldo: (id: string, amount: number) =>
-      request<unknown>(`/admin/users/${id}/balance`, { method: "PATCH", body: { amount } }),
+    ajustarSaldo: (
+      id: string,
+      amount: number,
+      moneda: Moneda = "ARS",
+      motivo?: string,
+    ) =>
+      request<{ cliente: string; saldoPrevio: number; balance: number }>(
+        `/admin/users/${id}/balance`,
+        { method: "PATCH", body: { amount, moneda, motivo } },
+      ),
     cambiarRol: (id: string, role: string) =>
       request<unknown>(`/admin/users/${id}/role`, { method: "PATCH", body: { role } }),
     darAcceso: (id: string, data: { nombre: string; apellido: string; dni: string }) =>

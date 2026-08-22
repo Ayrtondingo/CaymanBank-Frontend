@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 import SyncUser from "./components/SyncUser";
+import { ScriptTema } from "./components/TemaToggle";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       }}
     >
       <html lang="es" className="h-full" suppressHydrationWarning>
+        <head>
+          <ScriptTema />
+        </head>
         <body className={`${inter.variable} min-h-screen antialiased`}>
           <SyncUser />
           {children}

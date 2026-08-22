@@ -5,7 +5,7 @@ import { Logo } from "../../components/Logo";
 export default function SignUpPage() {
   return (
     <div className="flex min-h-screen flex-col bg-ink-50">
-      <header className="border-b border-ink-200 bg-white">
+      <header className="border-b border-ink-200 bg-surface">
         <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
           <Link href="/">
             <Logo />

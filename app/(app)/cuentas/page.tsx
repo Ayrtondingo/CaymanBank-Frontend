@@ -223,7 +223,7 @@ function TarjetaCuenta({
         "rounded-[var(--radius-card)] border p-5 text-left transition-colors",
         activa
           ? "border-brand-900 bg-brand-900 text-white"
-          : "border-ink-200 bg-white hover:border-ink-300",
+          : "border-ink-200 bg-surface hover:border-ink-300",
       ].join(" ")}
     >
       <div className="flex items-start justify-between">
@@ -441,7 +441,7 @@ function ModalCambio({
               className={[
                 "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
                 operacion === opcion
-                  ? "bg-white text-brand-900 shadow-[var(--shadow-card)]"
+                  ? "bg-surface text-ink-900 shadow-[var(--shadow-card)]"
                   : "text-ink-600 hover:text-ink-800",
               ].join(" ")}
             >

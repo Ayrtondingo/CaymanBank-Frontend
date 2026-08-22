@@ -103,7 +103,7 @@ export default function InicioPage() {
             <Link
               key={acceso.href}
               href={acceso.href}
-              className="flex flex-col items-center gap-2 bg-white px-4 py-5 text-center transition-colors hover:bg-brand-50"
+              className="flex flex-col items-center gap-2 bg-surface px-4 py-5 text-center transition-colors hover:bg-brand-50"
             >
               <span className="flex size-10 items-center justify-center rounded-full bg-brand-50 text-brand-700">
                 <svg
