@@ -46,6 +46,20 @@ export interface MovimientoRed {
   ownCbu: string;
 }
 
+export interface Contacto {
+  id: number;
+  cbu: string;
+  alias: string | null;
+  /** Apodo si lo hay, si no el titular según el Banco Central. */
+  nombre: string | null;
+  nombreTitular: string | null;
+  apodo: string | null;
+  bankCode: number | null;
+  moneda: Moneda;
+  vecesUsado: number;
+  ultimoUso: string | null;
+}
+
 export interface Tarjeta {
   id: number;
   tipo: "debito" | "credito";
@@ -395,6 +409,14 @@ export function createApi(getToken: () => Promise<string | null>) {
         body: { destinatario, amount, reason, moneda },
       }),
     historial: () => request<MovimientoRed[]>("/transactions/history"),
+    contactos: () => request<Contacto[]>("/transactions/contactos"),
+    renombrarContacto: (id: number, apodo: string) =>
+      request<unknown>(`/transactions/contactos/${id}`, {
+        method: "PATCH",
+        body: { apodo },
+      }),
+    borrarContacto: (id: number) =>
+      request<unknown>(`/transactions/contactos/${id}`, { method: "DELETE" }),
 
     // ---------------------------------------------------------- Tarjetas
     tarjetas: () => request<Tarjeta[]>("/tarjetas"),

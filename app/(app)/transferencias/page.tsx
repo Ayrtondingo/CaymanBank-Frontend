@@ -12,7 +12,8 @@ import {
   Input,
   Skeleton,
 } from "../../components/ui";
-import type { Moneda, MovimientoRed } from "@/lib/api";
+import type { Contacto, Moneda, MovimientoRed } from "@/lib/api";
+import { Contactos } from "./contactos";
 import { cbuCorto, esCbu, fechaHora, money } from "@/lib/format";
 
 export default function TransferenciasPage() {
@@ -26,6 +27,7 @@ export default function TransferenciasPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [historial, setHistorial] = useState<MovimientoRed[] | null>(null);
+  const [contactos, setContactos] = useState<Contacto[] | null>(null);
 
   const cuentas = perfil?.accounts ?? [];
   const cuentaOrigen = cuentas.find((cuenta) => cuenta.currency === moneda);
@@ -41,9 +43,22 @@ export default function TransferenciasPage() {
     }
   }
 
+  async function cargarContactos() {
+    try {
+      setContactos(await api.contactos());
+    } catch {
+      setContactos([]);
+    }
+  }
+
   useEffect(() => {
-    if (puedeOperar) void cargarHistorial();
-    else setHistorial([]);
+    if (puedeOperar) {
+      void cargarHistorial();
+      void cargarContactos();
+    } else {
+      setHistorial([]);
+      setContactos([]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puedeOperar]);
 
@@ -80,6 +95,7 @@ export default function TransferenciasPage() {
       setMotivo("");
       await refrescar();
       await cargarHistorial();
+      await cargarContactos();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -199,7 +215,19 @@ export default function TransferenciasPage() {
           </form>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <div className="space-y-6 lg:col-span-3">
+          <Contactos
+            contactos={contactos}
+            moneda={moneda}
+            onElegir={(c) => {
+              // Se carga el alias si lo tiene: es mas legible que el CBU.
+              setDestinatario(c.alias ?? c.cbu);
+              setError(null);
+            }}
+            onCambio={() => void cargarContactos()}
+          />
+
+        <Card>
           <CardHeader
             titulo="Historial"
             descripcion="Transferencias enviadas y recibidas"
@@ -275,6 +303,7 @@ export default function TransferenciasPage() {
             </ul>
           )}
         </Card>
+        </div>
       </div>
     </div>
   );
