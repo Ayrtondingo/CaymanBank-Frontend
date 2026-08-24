@@ -24,6 +24,7 @@ export default function CuentasPage() {
   const [seleccionada, setSeleccionada] = useState<string | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[] | null>(null);
   const [cambioAbierto, setCambioAbierto] = useState(false);
+  const [aliasDe, setAliasDe] = useState<Cuenta | null>(null);
   const [abriendoUsd, setAbriendoUsd] = useState(false);
 
   const cuentas = perfil?.accounts ?? [];
@@ -114,6 +115,7 @@ export default function CuentasPage() {
                   void navigator.clipboard.writeText(cuenta.cbu);
                   avisar("info", "CBU copiado");
                 }}
+                onAlias={() => setAliasDe(cuenta)}
               />
             ))}
           </div>
@@ -170,6 +172,15 @@ export default function CuentasPage() {
         </>
       )}
 
+      <ModalAlias
+        cuenta={aliasDe}
+        onCerrar={() => setAliasDe(null)}
+        onHecho={async () => {
+          setAliasDe(null);
+          await refrescar();
+        }}
+      />
+
       <ModalCambio
         abierto={cambioAbierto}
         onCerrar={() => setCambioAbierto(false)}
@@ -188,11 +199,13 @@ function TarjetaCuenta({
   activa,
   onSeleccionar,
   onCopiar,
+  onAlias,
 }: {
   cuenta: Cuenta;
   activa: boolean;
   onSeleccionar: () => void;
   onCopiar: () => void;
+  onAlias: () => void;
 }) {
   return (
     <button
@@ -232,7 +245,54 @@ function TarjetaCuenta({
         {money(cuenta.balance, cuenta.currency)}
       </p>
 
-      <div className="mt-4 flex items-center justify-between gap-2">
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className={activa ? "text-xs text-brand-200" : "text-xs text-ink-500"}>
+            Alias
+          </span>
+          <span className="flex items-center gap-2">
+            <span
+              className={[
+                "truncate text-xs font-medium",
+                cuenta.alias
+                  ? activa
+                    ? "text-white"
+                    : "text-ink-800"
+                  : activa
+                    ? "text-brand-300"
+                    : "text-ink-400",
+              ].join(" ")}
+            >
+              {cuenta.alias ?? "sin asignar"}
+            </span>
+            {cuenta.cbu && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onAlias();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.stopPropagation();
+                    onAlias();
+                  }
+                }}
+                className={[
+                  "shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-xs font-semibold",
+                  activa
+                    ? "text-accent-300 hover:bg-white/10"
+                    : "text-accent-600 hover:bg-accent-50",
+                ].join(" ")}
+              >
+                {cuenta.alias ? "Cambiar" : "Asignar"}
+              </span>
+            )}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
         <span
           className={[
             "tabular truncate text-xs",
@@ -263,8 +323,93 @@ function TarjetaCuenta({
             Copiar
           </span>
         )}
+        </div>
       </div>
     </button>
+  );
+}
+
+/**
+ * Asignar o cambiar el alias de una caja.
+ *
+ * El Banco Central los exige unicos a nivel global, asi que un alias tomado
+ * se rechaza del lado del Central y el error se muestra tal cual.
+ */
+function ModalAlias({
+  cuenta,
+  onCerrar,
+  onHecho,
+}: {
+  cuenta: Cuenta | null;
+  onCerrar: () => void;
+  onHecho: () => void;
+}) {
+  const { api, avisar } = useBank();
+  const [alias, setAlias] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAlias(cuenta?.alias ?? "");
+    setError(null);
+  }, [cuenta]);
+
+  async function enviar(event: FormEvent) {
+    event.preventDefault();
+    if (!cuenta?.cbu) return;
+    setError(null);
+    setEnviando(true);
+    try {
+      await api.aliasDeCuenta(cuenta.cbu, alias.trim());
+      avisar("exito", `Alias de tu caja en ${cuenta.currency} actualizado.`);
+      onHecho();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal
+      abierto={cuenta !== null}
+      onCerrar={onCerrar}
+      titulo={cuenta?.alias ? "Cambiar alias" : "Asignar alias"}
+      descripcion={
+        cuenta ? `Caja en ${cuenta.currency} · ${cbuLegible(cuenta.cbu)}` : undefined
+      }
+    >
+      <form onSubmit={enviar} className="space-y-4">
+        <Campo
+          etiqueta="Alias"
+          ayuda="Entre 6 y 20 caracteres: letras, números, puntos o guiones. Tiene que ser único en todo el sistema."
+        >
+          <Input
+            autoFocus
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+            placeholder={cuenta?.currency === "USD" ? "juan.perez.usd" : "juan.perez"}
+            maxLength={20}
+          />
+        </Campo>
+
+        <Aviso tono="neutro">
+          Con el alias podés recibir transferencias sin tener que dictar los 22
+          dígitos del CBU.
+        </Aviso>
+
+        {error && <Aviso tono="negativo">{error}</Aviso>}
+
+        <div className="flex justify-end gap-2">
+          <Boton type="button" variante="secundario" onClick={onCerrar}>
+            Cancelar
+          </Boton>
+          <Boton type="submit" cargando={enviando}>
+            Guardar
+          </Boton>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

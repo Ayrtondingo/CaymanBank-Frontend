@@ -367,6 +367,12 @@ export function createApi(getToken: () => Promise<string | null>) {
     abrirCuenta: (moneda: Moneda) =>
       request<Cuenta>("/accounts", { method: "POST", body: { moneda } }),
     movimientos: (cbu: string) => request<Movimiento[]>(`/accounts/${cbu}/movimientos`),
+    /** Alias por cuenta. El backend elige el endpoint del Central segun la moneda. */
+    aliasDeCuenta: (cbu: string, alias: string) =>
+      request<{ cbu: string; moneda: Moneda; alias: string }>(
+        `/accounts/${cbu}/alias`,
+        { method: "PUT", body: { alias } },
+      ),
     cambiarDivisas: (operacion: "compra" | "venta", monto: number) =>
       request<{
         operacion: string;
