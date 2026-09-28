@@ -1,5 +1,5 @@
 /**
- * Los archivos del logo son JPEG con el fondo quemado, sin canal alfa: hay una
+ * Los archivos del logo tienen el fondo quemado, sin canal alfa: hay una
  * version para fondo claro y otra para oscuro. La eleccion se hace por CSS
  * (ver `.logo-marca` en globals.css), no por JS, asi no parpadea al hidratar.
  */
@@ -17,7 +17,7 @@ export function Logo({
         role="img"
         aria-label="Cayman Shadow Bank"
         className={[
-          "size-10 shrink-0 rounded-lg",
+          "h-10 w-16 shrink-0 rounded-lg",
           invertido ? "logo-marca-oscuro" : "logo-marca ring-1 ring-black/5",
         ].join(" ")}
       />
