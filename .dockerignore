@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo
+# Nunca servir ejecutables como archivos publicos.
+public/**/*.exe

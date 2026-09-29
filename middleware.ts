@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
 
 // El frontend ya no tiene route handlers propios: todo lo que necesita
 // credenciales pasa por el backend. Por eso `/api` dejo de ser publico.
@@ -13,9 +14,27 @@ export default clerkMiddleware(async (auth, request) => {
   const { userId, redirectToSignIn } = await auth();
 
   if (!userId) {
-    return redirectToSignIn({ returnBackUrl: request.url });
+    return redirectToSignIn({ returnBackUrl: urlPublica(request) });
   }
 });
+
+/**
+ * Detras de un proxy (Caddy en el droplet), `request.url` trae la direccion
+ * interna del contenedor (http://0.0.0.0:3000/...): despues del login el
+ * navegador volveria a una URL que no puede abrir. Se reconstruye con los
+ * encabezados que manda el proxy; sin proxy (local, Vercel) da lo mismo.
+ */
+function urlPublica(request: NextRequest) {
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (!host) return request.url;
+
+  const protocolo =
+    request.headers.get("x-forwarded-proto")?.split(",")[0].trim() ??
+    request.nextUrl.protocol.replace(":", "");
+
+  return `${protocolo}://${host}${request.nextUrl.pathname}${request.nextUrl.search}`;
+}
 
 export const config = {
   matcher: [
