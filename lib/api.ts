@@ -44,6 +44,10 @@ export interface MovimientoRed {
   amount: number;
   status: string;
   ownCbu: string;
+  /** Moneda de la caja propia. Falta en los movimientos que arma /users/me. */
+  currency?: Moneda;
+  /** Concepto de la transferencia, o el motivo si fue rechazada. */
+  description?: string;
 }
 
 export interface Contacto {
@@ -286,11 +290,9 @@ export interface ResumenGastos {
   }[];
 }
 
-export interface RespuestaChat {
-  respuesta: string;
-  accionesEjecutadas: { accion: string; parametros: unknown; resultado: unknown }[];
-  accionesPendientes: { accion: string; parametros: unknown; motivo: string }[];
-  requiereHumano: boolean;
+export interface MensajeChat {
+  role: "user" | "assistant";
+  content: string;
 }
 
 export interface UsuarioAdmin {
@@ -404,11 +406,12 @@ export function createApi(getToken: () => Promise<string | null>) {
       reason?: string,
       moneda: Moneda = "ARS",
     ) =>
-      request<unknown>("/transactions/transfer", {
+      request<MovimientoRed>("/transactions/transfer", {
         method: "POST",
         body: { destinatario, amount, reason, moneda },
       }),
-    historial: () => request<MovimientoRed[]>("/transactions/history"),
+    historial: (moneda: Moneda = "ARS") =>
+      request<MovimientoRed[]>(`/transactions/history/${moneda}`),
     contactos: () => request<Contacto[]>("/transactions/contactos"),
     renombrarContacto: (id: number, apodo: string) =>
       request<unknown>(`/transactions/contactos/${id}`, {
@@ -513,18 +516,6 @@ export function createApi(getToken: () => Promise<string | null>) {
     urlExportar: (cbu: string, formato: "csv" | "json") =>
       `${API_URL}/accounts/${cbu}/movimientos/exportar?formato=${formato}`,
 
-    // --------------------------------------------------------------- Chat
-    enviarMensaje: (texto: string, confirmar = false) =>
-      request<RespuestaChat>("/chat/mensajes", { method: "POST", body: { texto, confirmar } }),
-    historialChat: () =>
-      request<{ id: number; rol: string; texto: string; fecha: string }[]>("/chat/mensajes"),
-    limpiarChat: () => request<unknown>("/chat/mensajes", { method: "DELETE" }),
-    escalar: (motivo: string) =>
-      request<{ id: number; estado: string }>("/chat/escalamientos", {
-        method: "POST",
-        body: { motivo },
-      }),
-
     // -------------------------------------------------------------- Admin
     usuarios: () => request<UsuarioAdmin[]>("/admin/users"),
     ajustarSaldo: (
@@ -542,8 +533,32 @@ export function createApi(getToken: () => Promise<string | null>) {
     darAcceso: (id: string, data: { nombre: string; apellido: string; dni: string }) =>
       request<unknown>(`/admin/users/${id}/sync-cbu`, { method: "POST", body: data }),
     bancos: () => request<{ bankCode: string; name: string }[]>("/central-bank/banks"),
-    escalamientos: () => request<unknown[]>("/chat/escalamientos"),
   };
 }
 
 export type Api = ReturnType<typeof createApi>;
+
+/**
+ * Asistente de la landing. Es publico: no manda token y no ve ninguna cuenta.
+ * El historial lo guarda el navegador y viaja en cada mensaje.
+ */
+export async function preguntarAsistente(
+  texto: string,
+  historial: MensajeChat[],
+): Promise<string> {
+  const response = await fetch(`${API_URL}/chat/publico`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto, historial }),
+    cache: "no-store",
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new ApiError(
+      typeof data?.message === "string" ? data.message : `Error ${response.status}`,
+      response.status,
+    );
+  }
+  return data.respuesta;
+}

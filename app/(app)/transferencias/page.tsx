@@ -14,6 +14,7 @@ import {
 } from "../../components/ui";
 import type { Contacto, Moneda, MovimientoRed } from "@/lib/api";
 import { Contactos } from "./contactos";
+import { Comprobante } from "./comprobante";
 import { cbuCorto, esCbu, fechaHora, money } from "@/lib/format";
 
 export default function TransferenciasPage() {
@@ -28,6 +29,7 @@ export default function TransferenciasPage() {
 
   const [historial, setHistorial] = useState<MovimientoRed[] | null>(null);
   const [contactos, setContactos] = useState<Contacto[] | null>(null);
+  const [comprobante, setComprobante] = useState<MovimientoRed | null>(null);
 
   const cuentas = perfil?.accounts ?? [];
   const cuentaOrigen = cuentas.find((cuenta) => cuenta.currency === moneda);
@@ -37,7 +39,7 @@ export default function TransferenciasPage() {
 
   async function cargarHistorial() {
     try {
-      setHistorial(await api.historial());
+      setHistorial(await api.historial(moneda));
     } catch {
       setHistorial([]);
     }
@@ -53,14 +55,24 @@ export default function TransferenciasPage() {
 
   useEffect(() => {
     if (puedeOperar) {
-      void cargarHistorial();
       void cargarContactos();
     } else {
-      setHistorial([]);
       setContactos([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [puedeOperar]);
+
+  // El historial es el de la caja de la moneda elegida: antes mostraba solo
+  // pesos, y las transferencias en dolares no aparecian en ningun lado.
+  useEffect(() => {
+    if (puedeOperar) {
+      setHistorial(null);
+      void cargarHistorial();
+    } else {
+      setHistorial([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [puedeOperar, moneda]);
 
   async function enviar(event: FormEvent) {
     event.preventDefault();
@@ -88,8 +100,9 @@ export default function TransferenciasPage() {
 
     setEnviando(true);
     try {
-      await api.transferir(destino, valor, motivo.trim() || undefined, moneda);
+      const hecha = await api.transferir(destino, valor, motivo.trim() || undefined, moneda);
       avisar("exito", `Transferiste ${money(valor, moneda)} correctamente.`);
+      setComprobante(hecha);
       setDestinatario("");
       setMonto("");
       setMotivo("");
@@ -230,7 +243,7 @@ export default function TransferenciasPage() {
         <Card>
           <CardHeader
             titulo="Historial"
-            descripcion="Transferencias enviadas y recibidas"
+            descripcion={`Enviadas y recibidas en ${moneda === "ARS" ? "pesos" : "dólares"}. Tocá una para ver el comprobante.`}
             accion={
               <button
                 onClick={() => void cargarHistorial()}
@@ -257,7 +270,13 @@ export default function TransferenciasPage() {
               {historial.map((movimiento) => {
                 const entrante = movimiento.type === "IN";
                 return (
-                  <li key={String(movimiento.id)} className="flex items-center gap-3 px-5 py-3.5">
+                  <li key={String(movimiento.id)}>
+                    <button
+                      type="button"
+                      onClick={() => setComprobante(movimiento)}
+                      aria-label="Ver comprobante"
+                      className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-ink-50"
+                    >
                     <span
                       className={[
                         "flex size-9 shrink-0 items-center justify-center rounded-full",
@@ -295,8 +314,9 @@ export default function TransferenciasPage() {
                       ].join(" ")}
                     >
                       {entrante ? "+" : "−"}
-                      {money(movimiento.amount)}
+                      {money(movimiento.amount, movimiento.currency ?? moneda)}
                     </p>
+                    </button>
                   </li>
                 );
               })}
@@ -305,6 +325,12 @@ export default function TransferenciasPage() {
         </Card>
         </div>
       </div>
+
+      <Comprobante
+        movimiento={comprobante}
+        titular={perfil?.fullName ?? "—"}
+        onCerrar={() => setComprobante(null)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Logo } from "./components/Logo";
 import { TemaToggle } from "./components/TemaToggle";
+import { ChatFlotante } from "./components/Chat";
 import {
   BotonesEntrada,
   ICONOS,
@@ -568,6 +569,8 @@ export default async function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <ChatFlotante />
     </div>
   );
 }
