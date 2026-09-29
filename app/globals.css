@@ -231,11 +231,17 @@ body * {
    margen, asi que alcanza con `contain`.
    -------------------------------------------------------------------------- */
 
-.logo-marca {
-  background-image: url("/images/cocodrilo-claro.png");
+/* El encuadre va en las dos clases: el sidebar usa solo `.logo-marca-oscuro`
+   y sin `contain` mostraba la imagen a tamano real, o sea la esquina vacia. */
+.logo-marca,
+.logo-marca-oscuro {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.logo-marca {
+  background-image: url("/images/cocodrilo-claro.png");
   background-color: #ffffff;
 }
 
