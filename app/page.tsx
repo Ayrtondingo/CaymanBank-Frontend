@@ -54,7 +54,7 @@ const PRODUCTOS = [
     titulo: "Cuentas en pesos y dólares",
     texto:
       "Caja de ahorro con CBU y alias propios. Comprá y vendé dólares a la cotización del momento, sin salir de la app.",
-    puntos: ["$150.000 de bienvenida", "US$10.000 al abrir la de dólares", "CBU y alias propios"],
+    puntos: ["$150.000 de bienvenida", "US$1.000 al abrir la de dólares", "CBU y alias propios"],
   },
   {
     icono: ICONOS.tarjeta,
@@ -109,7 +109,7 @@ const PASOS = [
     numero: "03",
     titulo: "Empezá a operar",
     texto:
-      "Transferí, pedí tu tarjeta, invertí. Abrí tu caja en dólares y sumá US$10.000 más.",
+      "Transferí, pedí tu tarjeta, invertí. Abrí tu caja en dólares y sumá US$1.000 más.",
   },
 ];
 
@@ -141,9 +141,9 @@ const FAQ = [
       "Nada. La caja de ahorro en pesos no tiene costo de apertura ni de mantenimiento, y la de dólares tampoco.",
   },
   {
-    pregunta: "¿Cómo son los $150.000 y los US$10.000 de regalo?",
+    pregunta: "¿Cómo son los $150.000 y los US$1.000 de regalo?",
     respuesta:
-      "Los $150.000 se acreditan en tu caja en pesos cuando validás tu identidad y el Banco Central te asigna el CBU. Los US$10.000 se acreditan solos al abrir tu caja de ahorro en dólares. Los dos son tuyos: podés transferirlos, invertirlos o gastarlos sin condiciones.",
+      "Los $150.000 se acreditan en tu caja en pesos cuando validás tu identidad y el Banco Central te asigna el CBU. Los US$1.000 se acreditan solos al abrir tu caja de ahorro en dólares. Los dos son tuyos: podés transferirlos, invertirlos o gastarlos sin condiciones.",
   },
   {
     pregunta: "¿Puedo transferir a otros bancos?",
@@ -254,7 +254,7 @@ export default async function LandingPage() {
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-white/15 pt-6">
               {[
                 ["$150.000", "de bienvenida"],
-                ["US$10.000", "en tu caja en dólares"],
+                ["US$1.000", "en tu caja en dólares"],
                 ["$0", "de mantenimiento"],
               ].map(([valor, etiqueta]) => (
                 <div key={etiqueta}>
@@ -388,7 +388,7 @@ export default async function LandingPage() {
               icono: ICONOS.cuenta,
             },
             {
-              monto: "US$10.000",
+              monto: "US$1.000",
               titulo: "Por abrir tu caja en dólares",
               texto:
                 "Se acreditan automáticamente al crearla. Podés operarlos, transferirlos o venderlos cuando quieras.",
@@ -499,7 +499,7 @@ export default async function LandingPage() {
               Abrí tu cuenta en un minuto
             </h2>
             <p className="mx-auto mt-3 max-w-md text-brand-100">
-              Te damos $150.000 de bienvenida y US$10.000 más al abrir tu caja en
+              Te damos $150.000 de bienvenida y US$1.000 más al abrir tu caja en
               dólares. Sin costo de apertura ni mantenimiento.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
